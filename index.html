@@ -1,0 +1,3463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>My Garage</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap');
+
+  :root {
+    --black: #0f0f0f;
+    --garage-red: #c0392b;
+    --steel: #2a2a2a;
+    --panel: #1a1a1a;
+    --chrome: #e8e8e8;
+    --muted: #888;
+    --accent: #f39c12;
+    --green: #27ae60;
+    --surface: #222;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--chrome);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--panel);
+    border-bottom: 3px solid var(--garage-red);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 3px;
+    color: var(--chrome);
+  }
+
+  .logo span { color: var(--garage-red); }
+
+  header button {
+    background: var(--garage-red);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  header button:hover { background: #a93226; }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── GARAGE GRID ── */
+  #garage-view { padding: 24px 20px; }
+
+  .section-label {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    border-left: 3px solid var(--garage-red);
+    padding-left: 10px;
+  }
+
+  .vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .vehicle-card {
+    background: var(--panel);
+    border: 1px solid #333;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .vehicle-card:hover {
+    border-color: var(--garage-red);
+    transform: translateY(-2px);
+  }
+
+  .vehicle-photo {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    display: block;
+    background: var(--steel);
+  }
+
+  .vehicle-photo-placeholder {
+    width: 100%;
+    height: 110px;
+    background: var(--steel);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+  }
+
+  .vehicle-info {
+    padding: 10px 12px 12px;
+  }
+
+  .vehicle-year {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--garage-red);
+    font-weight: 500;
+  }
+
+  .vehicle-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    line-height: 1.1;
+    margin-top: 2px;
+  }
+
+  .vehicle-tag {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .add-card {
+    background: transparent;
+    border: 2px dashed #333;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 170px;
+    gap: 8px;
+    color: var(--muted);
+    transition: border-color 0.2s, color 0.2s;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .add-card:hover { border-color: var(--garage-red); color: var(--garage-red); }
+  .add-card .plus { font-size: 32px; font-weight: 300; }
+
+  /* ── VEHICLE DETAIL ── */
+  #detail-view { padding: 0 0 40px; }
+
+  .detail-hero {
+    position: relative;
+    height: 140px;
+    background: var(--steel);
+    overflow: hidden;
+  }
+
+  .detail-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+  }
+
+  .detail-hero-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 72px;
+    opacity: 0.3;
+  }
+
+  .detail-hero-overlay {
+    z-index: 5;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 80px;
+    text-align: center;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    pointer-events: none;
+  }
+
+  .detail-year-make {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    color: var(--garage-red);
+    letter-spacing: 2px;
+  }
+
+  .detail-model {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #555;
+    color: var(--chrome);
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 20;
+  }
+
+  .back-btn:hover { background: rgba(0,0,0,0.9); }
+
+  .photo-change-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #555;
+    color: var(--chrome);
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* SETTINGS */
+  .settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    padding: 12px 14px;
+    margin-bottom: 2px;
+    gap: 10px;
+  }
+  .settings-item span {
+    font-size: 14px;
+    color: var(--chrome);
+    flex: 1;
+  }
+  .settings-item input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--garage-red);
+    color: var(--chrome);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    outline: none;
+    padding: 2px 4px;
+  }
+
+  /* CROP */
+  .crop-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--garage-red);
+    border: 2px solid white;
+    cursor: nwse-resize;
+  }
+  .crop-handle[data-pos="tr"] { cursor: nesw-resize; }
+  .crop-handle[data-pos="bl"] { cursor: nesw-resize; }
+
+  /* SERVICE SUGGESTIONS */
+  .svc-chip {
+    background: var(--steel);
+    border: 1px solid #444;
+    color: var(--chrome);
+    padding: 5px 10px;
+    font-size: 12px;
+    font-family: Inter, sans-serif;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+  .svc-chip:hover { border-color: var(--garage-red); background: #2e2e2e; }
+  .svc-chip.selected { border-color: var(--green); background: #1a2e1a; color: #5dbb7a; }
+
+  /* DRAG REORDER */
+  .vehicle-card.dragging {
+    opacity: 0.4;
+    transform: scale(0.97);
+    border-color: var(--garage-red);
+  }
+  .vehicle-card.drag-over {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+  }
+  .vehicle-card.reorder-mode {
+    cursor: grab;
+  }
+  .vehicle-card.reorder-mode:active {
+    cursor: grabbing;
+  }
+  .drag-handle {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 14px;
+    padding: 3px 6px;
+    z-index: 10;
+    pointer-events: none;
+    border-radius: 2px;
+  }
+
+  /* GALLERY */
+  .gallery-section {
+    padding: 16px 20px 4px;
+    background: var(--black);
+  }
+  .gallery-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+  .gallery-scroll::-webkit-scrollbar { display: none; }
+  .gallery-thumb {
+    flex: 0 0 90px;
+    height: 70px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+    opacity: 0.8;
+  }
+  .gallery-thumb:hover { border-color: var(--garage-red); opacity: 1; }
+  .gallery-add {
+    flex: 0 0 70px;
+    height: 70px;
+    background: transparent;
+    border: 2px dashed #444;
+    color: var(--muted);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .gallery-add:hover { border-color: var(--garage-red); color: var(--garage-red); }
+  /* LIGHTBOX */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 300;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 75vh;
+    object-fit: contain;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+  }
+  .lightbox-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .lightbox-btn {
+    background: none;
+    border: 1px solid #555;
+    color: var(--chrome);
+    padding: 8px 18px;
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .lightbox-btn:hover { border-color: var(--garage-red); color: var(--garage-red); }
+  .lightbox-btn.danger:hover { border-color: #c0392b; color: #c0392b; }
+  .lightbox-counter {
+    font-family: "Roboto Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 10px;
+    letter-spacing: 2px;
+  }
+
+  /* TABS */
+  .detail-tabs {
+    display: flex;
+    border-bottom: 2px solid #333;
+    background: var(--panel);
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 80px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 14px 8px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+  }
+
+  .tab-btn.active {
+    color: var(--garage-red);
+    border-bottom-color: var(--garage-red);
+  }
+
+  .tab-content { display: none; padding: 20px; }
+  .tab-content.active { display: block; }
+
+  /* SPECS TABLE */
+  .specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-bottom: 20px;
+  }
+
+  .spec-cell {
+    background: var(--panel);
+    padding: 12px 14px;
+  }
+
+  .spec-label {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .spec-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--chrome);
+  }
+
+  .spec-value.mono {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+  }
+
+  /* PARTS */
+  .parts-section { margin-bottom: 24px; }
+
+  .parts-title {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .part-row {
+    display: grid;
+    grid-template-columns: 1fr 70px 1fr auto;
+    align-items: center;
+    background: var(--panel);
+    padding: 12px 14px;
+    margin-bottom: 2px;
+    gap: 10px;
+  }
+
+  .part-name {
+    font-size: 13px;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .part-number {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--chrome);
+    flex: 1;
+    text-align: center;
+  }
+
+  .amazon-btn {
+    background: var(--accent);
+    color: var(--black);
+    border: none;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    text-decoration: none;
+    white-space: nowrap;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .amazon-btn:hover { background: #e67e22; }
+
+  /* SERVICE HISTORY */
+  .service-entry {
+    background: var(--panel);
+    border-left: 3px solid #333;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .service-entry.recent { border-left-color: var(--green); }
+
+  .service-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .service-date {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .service-mileage {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .service-desc {
+    font-size: 13px;
+    color: var(--chrome);
+    line-height: 1.5;
+  }
+
+  .service-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .btn-sm {
+    background: none;
+    border: 1px solid #444;
+    color: var(--muted);
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-sm:hover { border-color: var(--garage-red); color: var(--garage-red); }
+
+  .btn-sm.danger:hover { border-color: #c0392b; color: #c0392b; }
+
+  /* ADD SERVICE FORM */
+  .add-service-btn {
+    width: 100%;
+    background: transparent;
+    border: 2px dashed #444;
+    color: var(--muted);
+    padding: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+
+  .add-service-btn:hover { border-color: var(--green); color: var(--green); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid #333;
+    border-top: 3px solid var(--garage-red);
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    color: var(--chrome);
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-group label {
+    display: block;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: var(--steel);
+    border: 1px solid #444;
+    color: var(--chrome);
+    padding: 10px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus { border-color: var(--garage-red); }
+
+  /* Fix iOS/Safari native styling overriding number input colors */
+  input[type="number"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: var(--steel) !important;
+    color: var(--chrome) !important;
+  }
+
+  .form-group textarea { height: 80px; resize: vertical; }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+
+  .btn-primary {
+    background: var(--garage-red);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-primary:hover { background: #a93226; }
+
+  .btn-secondary {
+    background: none;
+    color: var(--muted);
+    border: 1px solid #444;
+    padding: 10px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .btn-secondary:hover { color: var(--chrome); }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* MILEAGE TRACKER */
+  .mileage-banner {
+    background: var(--surface);
+    border: 1px solid #333;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .mileage-label {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .mileage-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .mileage-update-btn {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+
+  .wiper-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: white;
+    padding: 10px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .undo-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: var(--chrome);
+    padding: 10px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 300;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+
+  .undo-toast.active { display: flex; }
+
+  .undo-toast button {
+    background: var(--garage-red);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .undo-toast button:hover { background: #a93226; }
+
+  .tag-badge {
+    display: inline-block;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 480px) {
+    .specs-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .vehicle-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+  <script>
+    function onGoogleLibraryLoad() {
+      if (typeof initGoogleAuth === 'function') initGoogleAuth();
+    }
+  </script>
+  <script src="https://accounts.google.com/gsi/client" onload="onGoogleLibraryLoad()" onerror="setSyncStatus('Google sign-in unavailable', false)"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAIuklEQVR4nO2dO47cRhCGS4aSzaRQoWLdQbFv4HM4NRwaTnUUp451BwWOFCrdTKmDBgYEyWF317ua/xctsDuzZPc3f1Vz+Hjz/v17AoDLL9EbAGoDgYAICAREQCAgAgIBEW+jNyAFLy8vvBf+/PlTd0vKcTuB2K6Mv9utrFpfIF1jGP9xbZ+WFcjfm2c8tmRJk5YSKI80p2w3bxmZFhEouTpH2gYvoFFtgcp5s2OB6lZVoOrq7KgbSMUEWsybHRUDqYxAa6uzo1AgFRDIR53f372bfcmX11f97dhQQqM3mU8oM1KH4co4Rlal1SivQLr2mErzDF2ZcjqUUSAtdUKkeYaWTNk0SieQ3J5U3hyRm5TKoUQCCdVJ7s0RoUlJNMoikMSecupskWiUwaF4gW6rzpa6GgULxLZnGXW2sDUKdChSIJ49S6qzhadRlEMxAkGdLlU0ChCIYY+DOn//+DH7kj8+fLDYki0MjZwd8hYoiT0MXUawUCq5Q64Czdqjq46RNM/QlWlWIzeH/ASKssfZmyNaJuV0yEmgKXtU1An35oiKSVMaOTjkIZCzPQnV2SLXKJVD5gK52ZPcmyMSk/I4ZCvQuD23UmeLj0Z2DhkK5GBPaXW2sDUKd8jq9i6wZwr2voyPntH5wSYJZG3PSurs4EVRYA7pC2Rqz8LqbGFoFOWQcgmDPSow9jSqlsXc4g72dDF1SBHNEjao9ux+3k2dHbPlbLCWaRUytQSCPUbMjsDgCGsVMh2BVrXn+7ev3799jd0Gyu2QXw9U0Z7Tn0MwckiOQg80IvLU/oSrQ0+M+fjps/+W7JhqiUb6IWEzJE0g9eOb4fZclK0MFU19fIQz6FHCxuMngz0qf2PK+Cg5FDJRCdMtXrH2MLSIrWjjtcy0kPET6Ob2sF+lhW4OsQvZ3R+20m1rrmMmvJyFwyxha8RPd/of9oz/pTPhhYwj0B3sORVCklV2xDoUXMJC7GGXrW45C6lose3jdAIpxk+UPRe/HUmRnOVsMIfUQ0g/gdLeAkHYL2//rG5nrT47cwIpHnd2jh/12MhWzhTHc2qW50pY960TFi/ripOqs9YqZONVbCKBtOJnJXu67+AcRVpjOz7Xmj1Qtu6nmw1a8dB9n2xdkeJMeS/jfeJHq18eJ09n7dxcjgqk1f044BY8p29+8dsMZ4M86M7XYBVzTSDrD4d/8Jz+i/Ao8gyhoVWYSvw42HPxW/+De+HHG0dWZPLl2ArfxmcIHsY/zVPOJCgkUGz8hH/QuwTKLQ+hbgL1n1iY9lmT+dVpfPz0+WJT26+SbOqRl5eXa4f6CZQzfqrYsyUkiqxDqNMD5YyfwIW6hEKL/C3XDhRronP2y+Os11l3Sliq+lVanR2e+2JaxWokUPXgOVK0nB25EkjeAKnET8V+eQS3Y9byWbgwgZ9ADl9+jQRPUXseJIki9mzmLWGrBs+R0p31U4HC69fFsC4QPDuu90i+s3ZVLGkCXUT3YupsebZrmXtqpkAhZ/+sFzxHAveRN6dWCRR+oxaww2hGkpYwUIVzgXJ+BQZiObWCk0B5Tn8GujBm1qSEoQHKicW8oAcCIiAQEAGBgAgIBEScCIQ1PHjG0Y3pBOqu9LAEy0x3dmZX8ihhQAQEAiIgEBDRvzJ1Mf79i/Nc7XF+/fNeLSASCIiAQEAEBAIiIBAQAYGACAgEREAgIAICAREQCIiAQEAEBAIiIBAQMS1Q997m48+ABf50Z2fkmZhbTgRiPPsZ3ISjGyhhQAQEAiIgEBABgYAIE4GwEMuJxbxwBJpd6YEqMGb2XCCs5MGRUyvQAwERVgKhDcqG0Ywwrwv78vrqf6M7lXsl//fPb/I3uSDtDZ278FpblDAg4qlA8j4aVSwP8rl45gMSCIi4emJh905TDvcKqttSaKHy5AP5WRycBEIVWwO7+kUoYUCI6KG7FPfceDCI/Im7hAQCdnQEwpdi4NoBaQKNHL5EKx2FSv26pi8QQujOdGdfoQdCCOXEIX4ITTQQMiRQN8cQQtmwXr0/cE0gOOSD5ziPCqQSQiAPKvFD/j0QQsga5xHWFAghVAXFmZoQSOuAEELIDq2xHZ9r5RI2qDYcsmBwVHULxZxAikel4ZAuiuM5Ncv6TTQ6ocyoz860QCN6opA5o1i8ZotM8FcZcEhO7BhyBFIMIYre/+qMj55F/BA7geBQBsLtofASBqrDFwghFEuG+CFhAsGhKJLYQz4lDA7pomuPEKlA6mdMw6Fr1MdHOIOdCwsH6V5/SGOXIG7B5Yg7ZtWxLl4Nv1XYbJwiirZY2KOCjkCDIsMhHkb2qLQfagkEh4zIbA9p9UAPRpohmu+H6JYtEePD42wPRR2JZlTou0WRnT26KAs0rjYcusDUHt0jL8olrDFYyIhVy2jpcsb7kETZQ0YCkb1DtJxG7HwNtIfseiDTWtZYqaIVtYfsEqjhkENUPIokH4Nwe8haIJpxiG6mkY86ZHyHJ3OByNGhRnKT5JU3jz3kIxC5O0QpNVJp2lLZQ24C0aRDpKQRJTBJq9mfXW343JvQTyCKc6jhbJLuIjGnPeQsEM07RNoaNYxksjiywDjM4XlfVG+BKI1DOxhKORyISm4PhQhELIfIRaM88I6v+t+TOUagBjQ6pYo6jUiBiOsQLaoR+1udwJvBBwtEAodoIY0kp/LEPkogXqDGbTWqq04ji0Akc4gKaiQ8gTCDPZRKoIZQI0pvkvzE0yTqNNIJRBoONVKZpHXCcip7KKdADS2NGiEy6Z7lnk2dRl6BSNuhB6YyGV0akdMeSi5Qw0ijHQyrfC6jSatOo4BADR+NUpFcncbb6A0YpY3mTTQqoU6jjECNx8guaVIhbx4UE+jBYoFUUZ1GVYEa1QOprjcPagv0oFwgLaBOYxGBGttZSSjTMtJsWUqgLXmq25LePFhWoAe7+XPwaW1jdqwv0I7T2WVbdStXTrmdQKfAAzZ42AoQAYGACAgEREAgIOJ/k5undnDUyiQAAAAASUVORK5CYII=">
+  <link rel="icon" type="image/png" sizes="512x512" href="data:image/png;base64,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">
+  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIk15IEdhcmFnZSIsICJzaG9ydF9uYW1lIjogIk15IEdhcmFnZSIsICJzdGFydF91cmwiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTExMTExIiwgInRoZW1lX2NvbG9yIjogIiMxMTExMTEiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFNQUFBQURBQ0FJQUFBRGR2dnRRQUFBSXVrbEVRVlI0bk8yZE80N2NSaENHUzRhU3phUlFvV0xkUWJGdjRITTROUndhVG5VVXA0NTFCd1dPRkNyZFRLbURCZ1lFeVdGMzE3dWEveGN0c0R1elpQYzNmMVZ6K0hqei92MTdBb0RMTDlFYkFHb0RnWUFJQ0FSRVFDQWdBZ0lCRVcrak55QUZMeTh2dkJmKy9QbFRkMHZLY1R1QjJLNk12OXV0ckZwZklGMWpHUDl4YlorV0ZjamZtMmM4dG1SSms1WVNLSTgwcDJ3M2J4bVpGaEVvdVRwSDJnWXZvRkZ0Z2NwNXMyT0I2bFpWb09ycTdLZ2JTTVVFV3N5YkhSVURxWXhBYTZ1em8xQWdGUkRJUjUzZjM3MmJmY21YMTFmOTdkaFFRcU0zbVU4b00xS0g0Y280UmxhbDFTaXZRTHIybUVyekRGMlpjanFVVVNBdGRVS2tlWWFXVE5rMFNpZVEzSjVVM2h5Um01VEtvVVFDQ2RWSjdzMFJvVWxKTk1vaWtNU2VjdXBza1dpVXdhRjRnVzZyenBhNkdnVUx4TFpuR1hXMnNEVUtkQ2hTSUo0OVM2cXpoYWRSbEVNeEFrR2RMbFUwQ2hDSVlZK0RPbi8vK0RIN2tqOCtmTERZa2kwTWpad2Q4aFlvaVQwTVhVYXdVQ3E1UTY0Q3pkcWpxNDZSTk0vUWxXbFdJemVIL0FTS3NzZlpteU5hSnVWMHlFbWdLWHRVMUFuMzVvaUtTVk1hT1Rqa0laQ3pQUW5WMlNMWEtKVkQ1Z0s1MlpQY215TVNrL0k0WkN2UXVEMjNVbWVMajBaMkRoa0s1R0JQYVhXMnNEVUtkOGpxOWk2d1p3cjJ2b3lQbnRINXdTWUpaRzNQU3VyczRFVlJZQTdwQzJScXo4THFiR0ZvRk9XUWNnbURQU293OWpTcWxzWGM0ZzcyZERGMVNCSE5FamFvOXV4KzNrMmRIYlBsYkxDV2FSVXl0UVNDUFViTWpzRGdDR3NWTWgyQlZyWG4rN2V2Mzc5OWpkMEd5dTJRWHc5VTBaN1RuME13Y2tpT1FnODBJdkxVL29TclEwK00rZmpwcy8rVzdKaHFpVWI2SVdFekpFMGc5ZU9iNGZaY2xLME1GVTE5ZklRejZGSEN4dU1uZ3owcWYyUEsrQ2c1RkRKUkNkTXRYckgyTUxTSXJXamp0Y3kwa1BFVDZPYjJzRitsaFc0T3NRdlozUisyMG0xcnJtTW12SnlGd3l4aGE4UlBkL29mOW96L3BUUGhoWXdqMEIzc09SVkNrbFYyeERvVVhNSkM3R0dYclc0NUM2bG9zZTNqZEFJcHhrK1VQUmUvSFVtUm5PVnNNSWZVUTBnL2dkTGVBa0hZTDIvL3JHNW5yVDQ3Y3dJcEhuZDJqaC8xMk1oV3poVEhjMnFXNTBwWTk2MFRGaS9yaXBPcXM5WXFaT05WYkNLQnRPSm5KWHU2NytBY1JWcGpPejdYbWoxUXR1Nm5tdzFhOGRCOW4yeGRrZUpNZVMvamZlSkhxMThlSjA5bjdkeGNqZ3FrMWYwNDRCWThwMjkrOGRzTVo0TTg2TTdYWUJWelRTRHJENGQvOEp6K2kvQW84Z3lob1ZXWVN2dzQySFB4Vy8rRGUrSEhHMGRXWlBMbDJBcmZ4bWNJSHNZL3pWUE9KQ2drVUd6OGhIL1F1d1RLTFEraGJnTDFuMWlZOWxtVCtkVnBmUHowK1dKVDI2K1NiT3FSbDVlWGE0ZjZDWlF6ZnFyWXN5VWtpcXhEcU5NRDVZeWZ3SVc2aEVLTC9DM1hEaFJyb25QMnkrT3MxMWwzU2xpcStsVmFuUjJlKzJKYXhXb2tVUFhnT1ZLMG5CMjVFa2plQUtuRVQ4VitlUVMzWTlieVdiZ3dnWjlBRGw5K2pRUlBVWHNlSklraTltem1MV0dyQnMrUjBwMzFVNEhDNjlmRnNDNFFQRHV1OTBpK3MzWlZMR2tDWFVUM1l1cHNlYlpybVh0cXBrQWhaLytzRnp4SEF2ZVJONmRXQ1JSK294YXd3MmhHa3BZd1VJVnpnWEorQlFaaU9iV0NrMEI1VG44R3VqQm0xcVNFb1FIS2ljVzhvQWNDSWlBUUVBR0JnQWdJQkVTY0NJUTFQSGpHMFkzcEJPcXU5TEFFeTB4M2RtWlg4aWhoUUFRRUFpSWdFQkRSdnpKMU1mNzlpL05jN1hGKy9mTmVMU0FTQ0lpQVFFQUVCQUlpSUJBUUFZR0FDQWdFUkVBZ0lBSUNBUkVRQ0lpQVFFQUVCQUlpSUJBUU1TMVE5OTdtNDgrQUJmNTBaMmZrbVpoYlRnUmlQUHNaM0lTakd5aGhRQVFFQWlJZ0VCQUJnWUFJRTRHd0VNdUp4Ynh3QkpwZDZZRXFNR2IyWENDczVNR1JVeXZRQXdFUlZnS2hEY3FHMFl3d3J3djc4dnJxZjZNN2xYc2wvL2ZQYi9JM3VTRHREWjI3OEZwYmxEQWc0cWxBOGo0YVZTd1A4cmw0NWdNU0NJaTRlbUpoOTA1VER2Y0txdHRTYUtIeTVBUDVXUnljQkVJVld3Tzcra1VvWVVDSTZLRzdGUGZjZURDSS9JbTdoQVFDZG5RRXdwZGk0Tm9CYVFLTkhMNUVLeDJGU3YyNnBpOFFRdWpPZEdkZm9RZENDT1hFSVg0SVRUUVFNaVJRTjhjUVF0bXdYcjAvY0UwZ09PU0Q1emlQQ3FRU1FpQVBLdkZEL2owUVFzZ2E1eEhXRkFnaFZBWEZtWm9RU091QUVFTElEcTJ4SFo5cjVSSTJxRFljc21Cd1ZIVUx4WnhBaWtlbDRaQXVpdU01TmN2NlRUUTZvY3lvejg2MFFDTjZvcEE1bzFpOFpvdE04RmNaY0VoTzdCaHlCRklNSVlyZS8rcU1qNTVGL0JBN2dlQlFCc0x0b2ZBU0JxckRGd2doRkV1RytDRmhBc0doS0pMWVF6NGxEQTdwb211UEVLbEE2bWRNdzZGcjFNZEhPSU9kQ3dzSDZWNS9TR09YSUc3QjVZZzdadFd4TGw0TnYxWFliSndpaXJaWTJLT0Nqa0NESXNNaEhrYjJxTFFmYWdrRWg0ekliQTlwOVVBUFJwb2htdStINkpZdEVlUEQ0MndQUlIySlpsVG91MFdSblQyNktBczByalljdXNEVUh0MGpMOG9sckRGWXlJaFZ5MmpwY3NiN2tFVFpRMFlDa2IxRHRKeEc3SHdOdElmc2VpRFRXdFpZcWFJVnRZZnNFcWpoa0VOVVBJb2tINE53ZThoYUlKcHhpRzZta1k4NlpIeUhKM09CeU5HaFJuS1Q1SlUzanoza0l4QzVPMFFwTlZKcDJsTFpRMjRDMGFSRHBLUVJKVEJKcTltZlhXMzQzSnZRVHlDS2M2amhiSkx1SWpHblBlUXNFTTA3Uk5vYU5ZeGtzaml5d0RqTTRYbGZWRytCS0kxRE94aEtPUnlJU200UGhRaEVMSWZJUmFNODhJNnYrdCtUT1VhZ0JqUTZwWW82alVpQmlPc1FMYW9SKzF1ZHdKdkJCd3RFQW9kb0lZMGtwL0xFUGtvZ1hxREdiVFdxcTA0amkwQWtjNGdLYWlROGdUQ0RQWlJLb0laUUkwcHZrdnpFMHlUcU5OSUpSQm9PTlZLWnBIWENjaXA3S0tkQURTMk5HaUV5Nlo3bG5rMmRSbDZCU051aEI2WXlHVjBha2RNZVNpNVF3MGlqSFF5cmZDNmpTYXRPbzRCQURSK05VcEZjbmNiYjZBMFlwWTNtVFRRcW9VNmpqRUNOeDhndWFWSWhieDRVRStqQllvRlVVWjFHVllFYTFRT3ByamNQYWd2MG9Gd2dMYUJPWXhHQkd0dFpTU2pUTXRKc1dVcWdMWG1xMjVMZVBGaFdvQWU3K1hQd2FXMWpkcXd2MEk3VDJXVmJkU3RYVHJtZFFLZkFBelo0MkFvUUFZR0FDQWdFUkVBZ0lPSi9rNXVuZG5EVXlpUUFBQUFBU1VWT1JLNUNZSUk9IiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9wbmcifSwgeyJzcmMiOiAiZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFnQUFBQUlBQ0FJQUFBQjdHa090QUFBWmUwbEVRVlI0bk8zZHJaSmt5WGtHNEpSaXliQWR1TkRZOTJEc08vQjFpRG9NSGFLK0ZGTmozWU9Ba2VCU3NhRUdKYmRhdlYzVlZlZWN6UHgrbm9kSm9lZ3A5Wng4My93eXEycCs5LzM3OXdGQVA3L2YvUUlBMkVNQkFEU2xBQUNhVWdBQVRTa0FnS1lVQUVCVENnQ2dLUVVBMEpRQ0FHaEtBUUEwcFFBQW1sSUFBRTBwQUlDbUZBQkFVd29Bb0ttZmRyOEF1TmkzYjkvbS9mQWZQMzdNKytHd21BSWdtYW41ZnY1UDF4QWtvZ0FJYW0vUUgzYnZaU3NHQWxJQWhKQTA3cC8zMi8rREtvSHRGQUFibEkvN1o2Z0V0bE1BckNEeG4vSGh0NlFQbUUwQk1JdlFQK245TDFBWk1JTUM0RXBDZnhKbHdBd0tnTE9FL21MS2dLc29BQTZTK3hHOC9TMW9BZzVRQUx4QTZJZGxMT0FBQmNEWDVINHV4Z0tlcEFDNFMrNW5wd2w0VEFId2tkeXZSeFB3S1FYQTM4ajlEalFCN3lrQVJIOUh0NzkwTmRDY0F1aEw3bU1nYUU0QmRDVDYrY0JBMEpNQ2FFVHU4NWlCb0JzRjBJTG81eVVHZ2lZVVFHVnluek1NQk9VcGdKcEVQeGN5RUZTbEFLb1IvVXlpQnVwUkFIV0lmaFpRQTVVb2dBcEVQNHVwZ1JvVVFHNmkvMU4vK1BubkdULzJ2Lzc2MXhrL05pODFrTjN2dm4vL3Z2czFjRVRuNkorVTcrZDFiZ2cxa0pFQ3lLZFY5SWZOK3VlMWFnVTFrSXNDeUtSODlCZUkrMmVVcndRMWtJVUN5S0ZxOURkSi9NZXE5b0VhaUU4QlJGY3MraVgrbDRyMWdScUlUQUdFVmlQOWhmNWhOY3BBQjRTbEFJTEtIdjFDLzNMWnkwQU5CS1FBd2trZC9YSi9nZFJOb0FaQ1VRQ3haRXgvb2I5UnhqTFFBWEVvZ0NqU1JiL2NEeVZkRTZpQkNCVEFmcm1pWCs0SGw2c0oxTUJlQ21DekxPa3Y5OVBKMGdRNllDTUZzSTNvWndFMXdBTUtZSS80NlMvM2k0bmZCRHBnUFFXd1d2RG9sL3ZsQlc4Q05iQ1NBbGdxY3ZxTC9sWWkxNEFPV0VZQkxDTDZDVWdOTktjQVZvaVovbktmTnpHYlFBZk1wZ0RtRXYwa29nYTZVUUFUQlV4LzBjK1hBdGFBRHBoRUFjd1NMZjFGUHkrSlZnTTZZQVlGY0QzUlR4bHFvRFlGY0xGUTZTLzZ1VVNvR3RBQkYxSUFWNHFUL3FLZnk4V3BBUjF3RlFWd0RkRlBFMnFnRWdWd2dTRHBML3BaSmtnTjZJQ1RGTUJaRWRKZjlMTkZoQnJRQVdjb2dPTWlSUCtRL213Vm9RT0dHamhLQVJ3VUlmMUZQMEZFcUFFZGNJQUNPR0o3K290K0F0cGVBenJnVlFyZ1pYdlRYL1EvNlkrLy9ucnREL3ozWDM2NTlnZFd0YmNHZE1CTEZNQnJwSDhjbDBmOEdlcmhQUjJRaFFKNGx1amZLRlRXUDY5NUs2aUIrQlRBVTZUL1lra1QvN0dHZmFBRGdsTUFYOXVZL24yaXYyVGlQOWFuRHpiV2dBNTRUQUY4UWZyUDB6RDA3eWxmQmpvZ0pnWHd5SzcwTHh6OVF2OUxoY3RnVnczb2dIc1V3RjNTLzBKeS80Q1NUYUFEUWxFQW45dVMvc1dpWCtoZnFGZ1piS2tCSGZCYkN1QVQwdjhNdVQ5Vm1TYlFBUkVvZ0kray96RnlmN0VDVGFBRHRsTUEvMkI5K21lUGZybS9YZlltV0Y4RE91Q05Bdmc3NmY4UzBSOUs2aHJRQWJzb2dMK1IvaytTKzhFbGJRSWRzSVVDR0dONStvdCtabE1EejlBQkNrRDZmMDMwSjVXeEJuVEFTdDBMUVBvL0lQZkx5TlVFT21DWjFnV3dNdjFGUDl1cGdYdmFka0RmQXBEK254TDk1U1dxQVIwd1c5TUNrUDYvSmZwYnlWSURPbUNxamdVZy9UOFEvVzJscUFFZE1FKzdBcEQrNzRsK1JvWWEwQUdUOUNvQTZmOUc5UE5COEJyUUFUTTBLb0JsNlI4OCtvZjA1NDdnSFRBVzFrQ1REdWhTQU5ML1J2VHpwZUExb0FNdTFLSUFwUDhRL2J3b2NnM29nS3ZVTHdEcEwvbzVMR3dONklCTC9INzNDNWhMK2t0L3pnajcvQ3hiY2J2K2JmQTFpazhBYS83eVlxWi8yS1ZMUmpGSGdUVnpRT0Vob1BJRUlQM2hLakdmcURXcnIvQVFVSFlDYUp2K01SY3FaUVFjQmN3Qmg5V2NBS1EvVEJMd0dUTUhIRlp3QXVpWi9nR1hKYlZGR3dYTUFRZFVtd0NrUDZ3Ujdha3pCeHhRYlFKWThOY1RLdjJqTFVJYUNqVUtMSmdES2cwQnBTWUE2US9yaFhvT0Y2elFTa05BblFLUS9yQkxxS2RSQnp5dnlCRlFxL1FQdGRqZ3ZUakhRYzZDbmxGbkFwaEsrc016NGp5ZmNkWnNaQlVLWVBiMlA4NlRGR2Qxd1QxeG50TFpLN2ZBUVZENkk2QW02UjluVWNHVGdod0h6VDRMU24wUWxMc0FwRCtIL2VYUGYzci9ILy9wbi85bDF5c3BUQWNFVitFSXFEYnBmN20vL1BsUEg5TC8zbi9KU1o3ZTRCSlBBQjIyLzliUHRaNk1lTlBBdFNMTUFZYUFUMldkQUtRL3IzcCtnMjhVdUZhRUo5bUY4S2RTVGdEbDB6L0NncW5rY0tBYkJhNjFmUlF3QjN5UWRRS1lSL29YYzJZN2J4UzQxdlpuZS92cWppYmZCREIxKzcvOStkaStRaXE1S3I3TkFkZXFQUWZrR2dLU0ZZRDA1MG1YYjk3VndJVjBRQkNPZ0tLUS9oZWFjWFRqT09oQ252WWdNazBBaGJmLzFzTlZGc1MwVWVBcWUrY0FROEJJTkFGSWY3NjBacE51RkxqSzNpZC82cXJQOHE3UU5BVXdqL1N2WVdVdTY0Q3JGTzZBRkhJVVFKWTZmWlgwdjhTV2IzSHcxUkZYcWJvS1VxUldnZ0tvZXZoVDlibGZiRzhLNjRCTGJGd0x6UStDRWx3Q3ovc2xTdi9VNG9TdmErRkxiTHdUbm5jaEhQdzJPSG9CU0g4K0ZTZjkzNmlCODNUQVlxR1BnT0lQVUFkSS8vTUNwditJK3FweUtiazZJdWRZNkFtZzN2YS81UE85VXZ5UU5RZWN0MnNPYURnRXhDMEE2YzhIOGRQL2pSbzRTUWVzRWZvSWFBYnBuMVNpOUIvWlhtMUF1OVpMdDA4R0JDMkF5S2RtQjBqL001Sys0ejdweTQ2ajJLcUptV2tSQzZEWTRVK3g1M2l4N0JtYS9mWHZ0V1h0ekV1SmdCMFE4UTVnMHE5Sit1ZXk4bXZkWnY5WnJnVE8ySElmTU9reUlOcE5RTGdKSUdCSnN0N2lML1djSGRDT2c3aUpsbS9oSmdEYmZ6YnV4NDBDTVJrQ0pvbFZBTksvdVFqZjVxOERZdElCTXdRNkFvbzJISjBoL1ErSWtQNVAvbS9PY0J4MFRLVTFGU2ZyQWswQVpiYi9sWjdVWlFMdXV3TytKTmJQQWJXSGdDZ0ZJUDNiQ3JMeC8xVGsxOWFXRHJoUW9DTWdHbHF3eXo2VHNBdlMyWEVRRzRXWUFHei9HOHExdVhZY0ZJb2g0Q3BsQzBENlI1WXIvVzh5dnViQ2FuVEE5Z0xZZndRVTUwTDhET24vdk9ESFBnOSs3T1UvOHdQSFFjK3JzZUsycDkvK0FwaWgyMWY2WmJIZ0haQlRZM3BTdGJ5bkE4SXFtU3FiQzJCN0FWNml4bVprdGpKSEtENG9FRVNOZGJjM0F6ZmZBUlE0L2EveEZNNldldU4vVDhuL1Ura3N2Z3dvZGhPd2N3SW9zUDJYL2wvS2Z1eXo4YzgxQnp5andCcmNtSVRWN2dCS250UGxsZlMrOTZVWE1QWG5PdzZLcGxqQ2JEc0NjdmhUVzVrVC95ZFZuWEt5Y0JCMFRMVUpZQm5wLzBDMzlCOUdnZDJzeDJQMkZFQ0I3VC8zbEQvMnVjY0hCZnFZa1RaYmJnSk1BRWZZYm55cThIM3ZrM3hRWUNPcjhvQU5kd0RadC8rZXMwODFQUFo1d0c5amw1V1hBUVZ1QWt3QVhLRHRzYzg5UmdGU1dEMEIyUDRYWTZ2N1dQTXpzUzBNQWM4ekFieEErbjlnNC84bDd3NWF6enA5M3RJQ3lMNzk1NDM3M3VjNURpb3MrOXVCVEFEUHNxMTQ0OWpuQUIyd2t0WDZwS1YzQUpjMzI3THR2K2ZwalkzL0dicHpwV1dYQVpmZkJDeTdCbGczQVJUNDZyZm1IUHVjNXppSVp5eEx5M1VUZ08xL2FyYXUxL0w3WE1NUThOaWlDY0QyUDY4MUcvOXVhZVY3STNoc1RXWXVtZ0JzLzVPeVVaM05xZHBzaG9BSHZBdUl1Mno4Ri9CQkFUWmFNUUhZL3FkajQ3K2VVV0FlUThBOUpvQzdwUDg4bmNQb0h1OE9tcWZ0V3Y3UzlBTEl1LzN2eWJIUFJvNkRzcnM4bldaZkJac0FQdGR3eStCdC9oSDRvTUFrRFZmME14UUFZOWo0QjZNRFdHUHVKWERTODU5V213VW4vbUg1cTduY210dmdSRmZCSm9EV1JFeGtqb09ZYmVJRVlQc2ZuQlAvTFBUMGhRd0I3NWtBT25MZm00dnZqV0NTTkJPQTdmOVZiQ2Z6VXR1WHlEZ0VKSnNBZlB0YlRON3RrNW9QQ3JRMUtWRWRBZjFkN2UyL1k1OGEzQXlmVjN1bHZ5UkhBZmowNzBrMi9zWG9nUGhTcE5hVUFzaDQvbE4xVTJEalg1WGpvRE15cnZjWnVacGpBdUFZOTcyMU9RN2lwQVFGa0dLU0NzaXhUeE5HZ2JEaVo5ZjFCZUQ4Wnp2SFB0MzRvTUFCR1ZmOTVla2FmUUtJWDZIUk9QYnB5WEZRVE1FVExIb0JMSkJ4STNDUFk1L21IQWU5cE5MYVArYmlBc2g0L2xPRFl4OXVIQWZWZG0zR1h2eFZFT20rL3FIR0ZrRDA4MXVlaWljdCtHYUlzRjhMNFFnb054dC83bkVjeEpjVVFHTHVlM25NelRDUFhYa0U1UHhuSlJ0L251ZHBlYXp0S1pBSklCL0hQcnpLY1JDZjZsc0FTYmYvam4wNHhuSFFBMG5UNEx6TENpRGQrVTlHM3ViUFNVYUJYYTdOdEt2eXR1OEVrSXRqSDY3aWd3SzhhVm9BdVNZK0czK3U1VGpvdDNKbHdsV2FGa0FXTnY3TTR6aUlhd3JBQmNBTTdudVp6U2l3VXNCcmdJNFRRSXBaejdFUHkraUFteFRKY0syT0JZRG81d09QUkUvaENzRDV6NWk4WTdMVStkVFVvVERMRURCYnRIeTdvQUJ5ZlFWMHd5bnZqV01mdnRUOENjbVZEK2V6Tjl3RXdLUzlVdk9GemZNbVBTcUdnSUIrMnYwQ21FNzA4NnJiTXlPeXk0czFBVVE3SUZ2djhpVW4vVG5zOG9kSG80eGdLWGUyQUZ3QVJDYjlPYW5oSTVRckpVNG1zQ09nbWhxdVd5WnhIRlJZckNNZ0xpSDl1WnlIcXFSQUJURDdhQ3pYWkhlWWhjb2tmZDVHUERzcjRsd0RCQ29BVHVxelB0bklNMWJKcVFMSWRRTU1VTStaSERZQkFEVFZwUUNhWEFBQWwyaVNHRkVLSU02dENNQnNRUkl2U2dFQXNKZ0NBR2pxZUFFa2VndFFrK004NEVLSmN1TndHcHNBQUpvS1VRQkI3a01BbG9tUWV5RUtBSUQxRkFCQVUvVUxJTkZORGhCSytmUTRXQUNKM2dJRVVONnhUSzQvQVFEd3FmMEZFT0VxSEdDOTdlbTN2d0FBMktKNEFaUy93d0dtcXAwaHhRc0FnSHNVQUVCVENnQ2dxU01GNEVNQUFORWNTT2JORThEMmQwRUJiTFEzQXgwQkFUUlZ1UUJxdjM4TFdLTndrbFF1QUFBZVVBQUFUU2tBZ0tZVUFFQlRDZ0NnS1FVQTBKUUNBR2pxNVFMd1BSQUFNYjJhenpzbkFOOERBYkF4Q2NzZUFSWCs4QjZ3V05VOEtWc0FBRHoyMCs0WEFPTi8vdk9YM1M5aGczLzlqNXFiU2hJeEFRQTBwUUFBbWxJQUFFMHBBSUNtRkFCQVV3b0FvQ2tGQU5DVUFnQm9TZ0VBTktVQUFKcFNBQUJOS1FDQXBoUUFRRk1LQUtBcEJRRFFsQUlBYUVvQkFEU2xBQUNhVWdBQVRTa0FnS1lVQUVCVENnQ2dLUVVBMEpRQ0FHaXFiQUg4K3krLzdINEpRQkZWODJSbkFmelhYLys2OFU4SGlHQmpFcjVjQUQ5Ky9KanhPZ0E0NmRWOExuc0VCTUJqQ2dDZ0tRVUEwSlFDQUdoS0FRQTBwUUFBbWxJQUFFMVZMb0NxSDk0RFZpcWNKSlVMQUlBSE5oZUFiNE1BT3R1YmdVY0t3TGRCQUVSeklKa2RBUUUwcFFBQW1sSUFBRTBWTDREQzc5OENGcWlkSWNVTEFJQjc5aGVBZDRJQ1BXMVB2LzBGQU1BV0J3dkFSd0VBNGppV3lmVW5nTnAzT01BODVkT2pmZ0VBOENrRkFOQlVpQUxZZmhVT3NGaUUzQXRSQUFDc2Q3d0FFcjBScVB4TkRuQzVSTGx4T0kxTkFBQk5LUUNBcHFJVVFJVDdFSUExZ2lSZWxBS1lMZEZ4SHJCZGs4VG9VZ0FBZkhDcUFCSzlFUWlncERNNWJBSUFhQ3BRQWN5K0ZXbHlxQWVjTkRzcmd0d0FqMUFGQU1CS1ArMStBVnptTDMvKzArNlhjTkQvL3ZlLzdYNEpHK1Q5KzZLTXN4TkFybnRncDBEQVk3bFM0bVFDeHpvQ2luTTBCakJEcUpTTFZRQUFMS01BQUpxNm9BQmNBd0ExNU1xSDg5a2JiZ0lJZFVBR2NLRm8rUmF1QUFCWW8yTUI1SnJ5Z0RVYUpzTTFCWER0TlVDMEtRbmd2R3VUN1pMVTdUZ0JBRERHK04zMzc5OHYrVUhmdm4yNzVPZmMvT0hubnkvOGFaLzY0NisvenY0akx1ZkxBNGp2bi83NVgzYS9oQ01XblArWUFBQ0k0cklDY0EwQWNFL0E3Zi9vUEFFMHZQRUhQdFUyRGZvV0FFQnpWeFpBdWxPZ3RyVVB2T2w1L1h0akFnQm9TZ0VBTkJXNkFKd0NBVk9sTy8rNTFzWC9KdkNQSHordS9VUVk3eVg5aUExd2xXdXZXa05QQUdzWUFxQW5hejk2QVVTZW5nQWVDNTVnMXhkQXJuOGc3TVpHQUxySnVPb3ZUOWZvRThBSVg2RUFuNHFmWFFrS0FJQVpwaFNBVXlBZ3NvenJmVWF1NXBnQTRrOVNBTytsU0swY0JiQkd4azBCOENvci9jMnNBc2g0Q2dRUTA2UkVUVE1CckptbmJBMmd0alZyUE1YNXowaFVBQUJjYTJJQlhENnpHQUtBTTVKdS8rZWRxSnNBQUpxYVd3Q0dBQ0FJMi8vZk1nRUFOS1VBUG1jSWdFcXM2RTlOTDRDa3AwQUFyOHAxL2pOTUFBL1lNa0FOMXZJOUt3b2c3eERndVlIc2xxM2lkTnYvWVFJQWFDdHJBUmdDZ0MvbDNmNnZzYWdBZkRjY3dQUFdaR2JXQ1dBWUFvQ0hiUCsvdEs0QURBRUF6MWlXbG9rbmdHRUlBTzZ3L1g5RzdnSllTUWRBRmxicms1WVd3SXk1Sm5YOUFxbk55SitWcCtVbWdCZllWa0I4MXVuelZoZEE5aUhBc3dXUnJWeWgyYmYvd3dRQTBOYUdBakFFQURQWS9yL0tCSENFRG9Cb3JNb0Q5aFJBOWlFQTZLekc5bitZQUE2ejNZQTRyTWRqdGhWQWdTSEFNd2NSTEY2SlpiYi9vOTRFNENBSW1LZFl3dXdzZ0FKZkQyY0lnTDBLck1HTlNWaHRBaGdPZ3FDTkFvYy9lMjB1Z0FKRHdOQUJzRU9OZGJjM0F3dE9BS05pVVFON2xVeVYvUVZnQ0FCZVZXUEZiVSsvL1FVd3lmcTZydkZFUW56cjExcko3ZjhJVWdDVGFsQUhRRDFsMG4vNzluOEVLUUFBMW90U0FJWUE0RXUyLzllS1VnRHo2QUNvb1V6Nnh4R29BSUpVNGlWMEFGeXIwcHFLazNXQkNtQVVPZ2dhdFo1WDJHdkxhcXA5K0hNVHF3RG0wUUdRVktYMGp5WmNBWVNxUjRBTFJjdTNjQVV3anlFQTBySDlueXBpQWN3clNSMEFpUlJMLzJqYi94R3pBRWJJMzlRWk9nQmVWV3pWeE15MG9BVXd6NjdocnRqVERGUHRXaTk5RG45dTRoWkFzWU9nb1FQZ09mWFNQK2IyZjBRdWdLbDBBTVJVTC8wakMxMEFZV3Z6REIwQTk1UmNIWkZ6TEhRQmpJb0hRYVBvVXc0bmJWd1hEUTkvYnFJWHdGUTZBSUlvbWY3eEpTaUFxUldxQTJDN3F1a2ZmUHMvVWhUQXlQQjdQRVlIUU5WVmtDSzFjaFRBVkhzSHdLcFBQenhqNy9QZitmRG5KazBCVkQwSUdydlhBT3hTT1AxVGJQOUhvZ0lZT2dBS2tmNFJaQ3FBMm5RQWZYamFnMGhXQUlXSGdHRlYwTVAyNTl6Mi8wMnlBaGc2QURMYi9vUkwvL2Z5RmNCc09nQW0yZjVzYjEvZDBmenUrL2Z2dTEvREVkKytmWnY2OC8vdzg4OVRmLzR6L3ZqcnI3dGZBbHhqZS9TUCtlbWZidnMvOGs0QXMzL1hFWFlLRWRZTW5CZmhTWmIrbjhwYUFFTUhRQVlSbm1IcGYwL2lBbWdpd3ZxQll6eTl3ZVV1Z0E1RHdMQ0t5Q25JYzJ2Ny8wRFdTK0QzT2x3STM3Z1dKb1VnMFQray8xZHlUd0EzVGVhQUVXbGR3VDF4bmxMcC82VUtCYkNBRG9CbnhIays0NnpaeUNvY0FkM01QZ2dha2M2Q2h1TWdnb2tUL1dOSitoZlkvbzlLRThDQ3Y0OVFlNHBRNjQzbVFqMk4wdjk1ZFFwZzZBRFlJZFJ6S1AxZlV1Y0k2R2JCUWRBSWRoWTBIQWV4U2Fqb0g2djJaNVVLb05RRU1GYjkzWVNhQTBhOGRVZ0gwWjQ2Nlg5QXRRbmdwdWNjTUl3Q0xCRXQrb2YwUDZyYUJIRFRjdzRZSVZjbXhRUjh4cVQvWVRVbmdKdTJjOEF3Q2pCQndPZ2YwditjbWhQQVRkczVZRVJkcStRVjg0bVMvaWRWbmdER3FpRmdSSjBEaGxHQTAySkcvMWk0OXlwY0FKVW5nTEh3Ynk3bUhEQUNyMTVTQ1B2OFNQOUxGSjhBYnN3Qnd5akFpOEpHLzVEKzEybFJBRU1IL0Q4MXdKY2lSLytRL3BmcVVnQkRCN3lqQnZoVThPZ2YwdjlxalFwZ0xPeUFFYjRHZEFBZkJFLy9sZGRzVGRKL2RDdUFvUVAra1JwZ2hJLytJZjJuYVZjQVF3ZjhoaHBvSzM3MEQray9VOGNDR0RyZ00ycWdsUlRSUDZUL1pFMExZT2lBTzlSQWVWbWlmMGovK2ZvV3dOQUI5Nm1Ca2hKRi81RCtTN1F1Z0xHMkE0WWFZQlBSLzBEYjlCOEtZT2lBSjJpQ3BITGwvbzMwWDBrQmpLRURucU1HRXNrWS9VUDZMNmNBL21aeEJ3dzF3QnlpLzBuU2Z5aUE5M1RBU3pSQktFbHovMGI2NzZJQS9vRU9lSlVhMkM1MTlBL3B2NVVDK0doOUI0ejhOVEEwd1hMWmMzOXMrbGMwcFA5N0N1QVRPdUFNVFRCVmdkeS9rZjRSS0lEUDZZRHpOTUdGeXVUK2pmUVBRZ0hjdGFVRFJya2F1RkVHQnhRTC9adGQvM2lxOVArVUFuaEVCMXhPRTN5cFpPN2ZTUDlvRk1BWGRuWEFLRjBETjhyZ1RlSFF2OWtWL1VQNlA2UUF2cVlERm1oWUJ1VkQvNDMwRDBzQlBHVmpCNHhPTmZDbVpCLzBTZnczRzZOL1NQOG5LSUJuNllDTmt2WkJ3OFIvVC9ySHB3QmVvd2JpQ05VS3piUCtBOUdmaFFKNG1RNUk0Zko2RVBGUGt2NkpLSUFqOW5iQVVBT0V0RGY2aC9SL25RSTRhSHNIRERWQUdOdWpmMGovUXhUQWNSRTZZS2dCdG9vUS9VUDZINlVBem9wUUF6cUFMU0trditnL1F3RmNJRUlIRERYQVFoR2lmMGovMHhUQU5ZSjB3RkFEVEJZaytvZjB2NElDdUpJYW9ERFJYNDhDdUZpY0RoaHFnSXZFaWY0aC9TK2xBSzRYcWdPR0d1Q0VVTkUvcFAvVkZNQXNhb0RVUkg4SENtQ2lhQjB3MUFCUGlCYjlRL3BQb3dEbUN0Z0JRdzF3UjhEb0g5Si9KZ1d3Z2hvZ09OSGZrd0pZSkdZSDNHaUN0bUxtL28zMFgwQUJMS1VHQ0VMME14VEFlcEU3WUtpQkJpSkgvNUQrYXltQVBZTFh3TkFFNVFUUC9TSDZkMUFBMjhUdmdCdE5rRnI4M0wrUi9sc29nTTNVQUpPSWZyNmtBUGJMMGdFM21pQzRMTGwvSS8zM1VnQlI1S3FCb1FtQ3laWDdRL1RIb0FCaVNWY0RReE5zbFM3M2graVBSQUdFazdFRDNpaURCVEtHL2h2cEg0b0NDQ3AxRFF4Tk1FSHEzQitpUHlRRkVGcjJHcmhSQm9kbEQvMGIwUitXQW9pdVJnZThVUVpmcWhINmI2Ui9aQW9naDJJMThFWWZqSEtKLzBiMHg2Y0FNcWxhQTIrYTlFSFZ4SDhqK3JOUUFQbVVyNEgzQ2xSQytiaC9UL1Rub2dDeWFsVURINFJ0aFZaWi80SG96MGdCNU5hNUJoNlkxQkNkOC8wQjBaK1hBcWhBRGJDRjZNL3VwOTB2Z0F2YzFxRWFZQm5SWDRNQ3FFTU5zSURvcjBRQlZLTUdtRVQwMTZNQWFsSURYRWowVjZVQUtudGJ0NXFBQStSK2VRcWdCUU1CTHhIOVRTaUFSZ3dFUENiM3UxRUFIUmtJK0VEMDk2UUEraklRSVBlYlV3QVlDRG9TL1F3RndCc0RRUWR5bi9jVUFCOXBnbnJrUHA5U0FOeWxDYktUK3p5bUFQaWFKc2hGN3ZNa0JjQUwzaWVMTWdoRjZIT0FBdUFnWTBFRWNwOHpGQUJuR1FzV0UvcGNSUUZ3SldVd2lkQm5CZ1hBTE1yZ0pLSFBiQXFBRlQ1a21UNzRsTVJuTVFYQUJyOU51b2FWSU83WlRnRVFRdmxLRVBjRXBBQUk2bDVpQmk4R1FVOGlDb0Jrdmt6WXFRMGgzNmxFQVZDTmpJWW4vWDczQ3dCZ0R3VUEwSlFDQUdoS0FRQTBwUUFBbWxJQUFFMHBBSUNtRkFCQVV3b0FvQ2tGQU5DVUFnQm9TZ0VBTktVQUFKcFNBQUJOL1IvK1RTWURGa1E2WUFBQUFBQkpSVTVFcmtKZ2dnPT0iLCAic2l6ZXMiOiAiNTEyeDUxMiIsICJ0eXBlIjogImltYWdlL3BuZyJ9XX0=">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="My Garage">
+  <meta name="theme-color" content="#111111">
+</head>
+<body>
+
+<header>
+  <div class="logo" style="display:flex;align-items:center;">
+    <svg width="52" height="52" viewBox="0 0 100 100" style="display:block;margin-right:10px;">
+      <circle cx="50" cy="50" r="47" fill="#1a1a1a"/>
+      <circle cx="50" cy="50" r="42" fill="#8b2a2a"/>
+      <circle cx="50" cy="50" r="36" fill="#111"/>
+      <path d="M28 62 L28 40 L50 24 L72 40 L72 62 Z" fill="none" stroke="#f0e6d3" stroke-width="4" stroke-linejoin="round"/>
+      <rect x="42" y="48" width="16" height="14" fill="#c9952a"/>
+    </svg>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;color:#e8e8e8;">MY <span style="color:#c0392b;">GARAGE</span></span>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <button onclick="showAddVehicleModal()" title="Add Vehicle">+ Add</button>
+    <button onclick="showSettings()" style="background:var(--steel);border:1px solid #444;" title="Settings">⚙</button>
+  </div>
+</header>
+
+<!-- GOOGLE SYNC BAR -->
+<div id="sync-bar" style="background:#1a1a1a;border-bottom:1px solid #333;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-family:Inter,sans-serif;">
+  <div id="sync-status" style="color:var(--muted);">Not signed in — data saved locally only</div>
+  <button id="sync-btn" onclick="handleSyncBtn()" style="background:none;border:1px solid #444;color:var(--chrome);padding:4px 12px;font-size:12px;font-family:Inter,sans-serif;cursor:pointer;">Sign in with Google</button>
+</div>
+
+<!-- GARAGE VIEW -->
+<div id="garage-view" class="view active">
+  <div style="padding: 24px 20px 0; display:flex; align-items:center; justify-content:space-between;">
+    <div class="section-label" style="margin-bottom:0;">Your Fleet</div>
+    <button id="reorder-btn" onclick="toggleReorder()" style="background:none;border:1px solid #444;color:var(--muted);padding:5px 12px;font-size:12px;font-family:Inter,sans-serif;cursor:pointer;letter-spacing:1px;">⇅ Reorder</button>
+  </div>
+  <div style="padding: 16px 20px 40px;">
+    <div class="vehicle-grid" id="vehicle-grid"></div>
+  </div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div id="detail-view" class="view">
+  <div class="detail-hero" id="detail-hero">
+    <button class="back-btn" onclick="showGarage()">← Back</button>
+    <div class="detail-hero-overlay">
+      <div class="detail-year-make" id="detail-year-make"></div>
+      <div class="detail-model" id="detail-model"></div>
+      <div id="detail-tag" style="margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <!-- PHOTO GALLERY -->
+  <div class="gallery-section">
+    <div class="gallery-scroll" id="gallery-scroll"></div>
+  </div>
+
+  <button onclick="showEditVehicleModal()" style="width:100%;background:var(--garage-red);color:white;border:none;padding:12px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">✎ Edit Vehicle</button>
+
+  <div class="detail-tabs">
+    <button class="tab-btn active" onclick="switchTab('specs')">Specs</button>
+    <button class="tab-btn" onclick="switchTab('parts')">Parts</button>
+    <button class="tab-btn" onclick="switchTab('history')">History</button>
+    <button class="tab-btn" onclick="switchTab('notes')">Notes</button>
+  </div>
+
+  <div id="tab-specs" class="tab-content active"></div>
+  <div id="tab-parts" class="tab-content"></div>
+  <div id="tab-history" class="tab-content"></div>
+  <div id="tab-notes" class="tab-content"></div>
+</div>
+
+
+<!-- SETTINGS VIEW -->
+<div id="settings-view" class="view">
+  <div style="padding:20px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <button class="back-btn" onclick="showGarage()" style="position:static;background:var(--steel);border:1px solid #444;">← Back</button>
+      <div class="section-label" style="margin:0;">Settings</div>
+    </div>
+
+    <!-- BACKUP & RESTORE -->
+    <div style="margin-bottom:32px;">
+      <div class="parts-title" style="margin-bottom:12px;">Backup & Restore</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Export your data to a file to back it up or move it to another device. Import to restore it.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="btn-primary" onclick="manualSync()" style="flex:1;min-width:120px;background:var(--green);">↻ Sync Now</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="exportData()" style="flex:1;min-width:120px;">⬇ Export Data</button>
+        <button class="btn-primary" onclick="exportToExcel()" style="flex:1;min-width:120px;background:var(--green);">⬇ Export to Excel</button>
+        <label class="btn-primary" style="flex:1;min-width:120px;text-align:center;cursor:pointer;">
+          ⬆ Import Data
+          <input type="file" accept=".json" style="display:none;" onchange="importData(event)">
+        </label>
+      </div>
+      <p id="import-status" style="font-size:12px;color:var(--green);margin-top:10px;display:none;"></p>
+    </div>
+
+    <!-- SERVICE ITEMS -->
+    <div style="margin-bottom:32px;">
+      <div class="parts-title" style="margin-bottom:12px;">Service Items</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">These appear as quick-select chips when logging service history.</p>
+      <div id="service-items-list"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <input type="text" id="new-service-item" placeholder="e.g. Transmission Flush"
+          style="flex:1;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;"
+          onkeydown="if(event.key==='Enter')addServiceItem()">
+        <button class="btn-primary" onclick="addServiceItem()">Add</button>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn-sm" onclick="resetServiceItems()" style="font-size:12px;color:var(--muted);">↺ Rebuild from history</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD VEHICLE MODAL -->
+<div class="modal-overlay" id="add-vehicle-modal">
+  <div class="modal">
+    <h2>Add Vehicle</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Year</label>
+        <input type="text" id="nv-year" placeholder="2024">
+      </div>
+      <div class="form-group">
+        <label>Make</label>
+        <input type="text" id="nv-make" placeholder="Toyota">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Model</label>
+      <input type="text" id="nv-model" placeholder="Camry">
+    </div>
+    <div class="form-group">
+      <label>Vehicle Type</label>
+      <select id="nv-type" onchange="updateVehicleTypeFields()" style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">
+        <option value="vehicle">Car or Truck</option>
+        <option value="other">Other (Mower, Scooter, Equipment)</option>
+      </select>
+    </div>
+    <div class="form-row" id="nv-tag-row">
+      <div class="form-group">
+        <label>License Plate</label>
+        <input type="text" id="nv-tag" placeholder="ABC-1234" style="text-transform:uppercase;">
+      </div>
+      <div class="form-group">
+        <label>Tracking Type</label>
+        <select id="nv-is-hours" onchange="updateMileageLabel()" style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">
+          <option value="0">Miles</option>
+          <option value="1">Hours</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" id="nv-inspection-row">
+      <label>Inspection Month</label>
+      <select id="nv-inspection-month" style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">
+        <option value="">Not set</option>
+        <option value="January">January</option>
+        <option value="February">February</option>
+        <option value="March">March</option>
+        <option value="April">April</option>
+        <option value="May">May</option>
+        <option value="June">June</option>
+        <option value="July">July</option>
+        <option value="August">August</option>
+        <option value="September">September</option>
+        <option value="October">October</option>
+        <option value="November">November</option>
+        <option value="December">December</option>
+      </select>
+    </div>
+    <div class="form-row" id="nv-type-only-row" style="display:none;">
+      <div class="form-group">
+        <label>Tracking Type</label>
+        <select id="nv-is-hours-other" onchange="updateMileageLabelOther()" style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">
+          <option value="0">Miles</option>
+          <option value="1">Hours</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label id="nv-mileage-label">Current Mileage</label>
+        <input type="number" id="nv-mileage" placeholder="45000">
+      </div>
+      <div class="form-group">
+        <label>Oil Capacity</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="nv-oil-cap" placeholder="5" step="0.1" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);white-space:nowrap;">Quarts</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Oil Weight</label>
+        <input type="text" id="nv-oil-weight" placeholder="0W-20">
+      </div>
+      <div class="form-group">
+        <label>Oil Filter #</label>
+        <input type="text" id="nv-oil-filter" placeholder="">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Air Filter #</label>
+        <input type="text" id="nv-air-filter" placeholder="">
+      </div>
+      <div class="form-group">
+        <label>Cabin Filter #</label>
+        <input type="text" id="nv-cabin-filter" placeholder="">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Lug Nut Torque</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="nv-torque" placeholder="76" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);white-space:nowrap;">ft/lb</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Oil Drain Wrench</label>
+        <input type="text" id="nv-wrench" placeholder="14mm">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Avg Miles/Week</label>
+        <input type="number" id="nv-avg-miles" placeholder="200">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Wiper — Driver Side</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="nv-wiper-driver" placeholder="26" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Wiper — Passenger Side</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="nv-wiper-passenger" placeholder="18" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Wiper — Rear (optional)</label>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" id="nv-wiper-rear" placeholder="12" style="flex:1;">
+        <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+      </div>
+    </div>
+    <div id="nv-hydraulic-section" style="display:none;">
+      <div class="parts-title" style="margin:16px 0 10px;">Hydraulic System</div>
+      <div class="form-group">
+        <label>Fluid Type</label>
+        <input type="text" id="nv-hydraulic-fluid" placeholder="20W-50, Hy-Gard...">
+      </div>
+      <div class="form-group">
+        <label>Capacity</label>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:6px;">
+          <input type="number" id="nv-hydraulic-cap" placeholder="3" step="0.1" style="width:100%;box-sizing:border-box;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:'Inter',sans-serif;font-size:16px;outline:none;">
+          <select id="nv-hydraulic-unit" style="width:100%;box-sizing:border-box;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 6px;font-family:Inter,sans-serif;font-size:13px;outline:none;">
+            <option value="Quarts">Quarts</option>
+            <option value="Gallons">Gallons</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Hydraulic Filter #</label>
+        <input type="text" id="nv-hydraulic-filter" placeholder="AM125424">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('add-vehicle-modal')">Cancel</button>
+      <button class="btn-primary" onclick="addVehicle()">Add Vehicle</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT VEHICLE MODAL -->
+<div class="modal-overlay" id="edit-vehicle-modal">
+  <div class="modal">
+    <h2>Edit Vehicle</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Year</label>
+        <input type="text" id="ev-year">
+      </div>
+      <div class="form-group">
+        <label>Make</label>
+        <input type="text" id="ev-make">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Model</label>
+      <input type="text" id="ev-model">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>License Plate</label>
+        <input type="text" id="ev-tag" style="text-transform:uppercase;">
+      </div>
+      <div class="form-group">
+        <label>Vehicle Type</label>
+        <select id="ev-type" onchange="document.getElementById('ev-hydraulic-section').style.display = this.value === 'other' ? '' : 'none'; document.getElementById('ev-inspection-row').style.display = this.value === 'other' ? 'none' : '';" style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">
+          <option value="vehicle">Car or Truck</option>
+          <option value="other">Other (Mower, Scooter, Equipment)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tracking Type</label>
+        <select id="ev-is-hours" style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">
+          <option value="0">Miles</option>
+          <option value="1">Hours</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" id="ev-inspection-row">
+      <label>Inspection Month</label>
+      <select id="ev-inspection-month" style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">
+        <option value="">Not set</option>
+        <option value="January">January</option>
+        <option value="February">February</option>
+        <option value="March">March</option>
+        <option value="April">April</option>
+        <option value="May">May</option>
+        <option value="June">June</option>
+        <option value="July">July</option>
+        <option value="August">August</option>
+        <option value="September">September</option>
+        <option value="October">October</option>
+        <option value="November">November</option>
+        <option value="December">December</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label id="ev-mileage-label">Current Mileage</label>
+        <input type="number" id="ev-mileage">
+      </div>
+      <div class="form-group">
+        <label>Oil Capacity</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="ev-oil-cap" step="0.1" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);white-space:nowrap;">Quarts</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Oil Weight</label>
+        <input type="text" id="ev-oil-weight">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Oil Filter #</label>
+        <input type="text" id="ev-oil-filter">
+      </div>
+      <div class="form-group">
+        <label>Air Filter #</label>
+        <input type="text" id="ev-air-filter">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cabin Filter #</label>
+        <input type="text" id="ev-cabin-filter">
+      </div>
+      <div class="form-group">
+        <label>Lug Nut Torque</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="ev-torque" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);white-space:nowrap;">ft/lb</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Oil Drain Wrench</label>
+        <input type="text" id="ev-wrench">
+      </div>
+      <div class="form-group">
+        <label>Avg Miles/Week</label>
+        <input type="number" id="ev-avg-miles">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Wiper — Driver Side</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="ev-wiper-driver" placeholder="26" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Wiper — Passenger Side</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="ev-wiper-passenger" placeholder="18" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Wiper — Rear (optional)</label>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" id="ev-wiper-rear" placeholder="12" style="flex:1;">
+        <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+      </div>
+    </div>
+    <div id="ev-hydraulic-section" style="display:none;">
+      <div class="parts-title" style="margin:16px 0 10px;">Hydraulic System</div>
+      <div class="form-group">
+        <label>Fluid Type</label>
+        <input type="text" id="ev-hydraulic-fluid" placeholder="20W-50, Hy-Gard...">
+      </div>
+      <div class="form-group">
+        <label>Capacity</label>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:6px;">
+          <input type="number" id="ev-hydraulic-cap" step="0.1" style="width:100%;box-sizing:border-box;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:'Inter',sans-serif;font-size:16px;outline:none;">
+          <select id="ev-hydraulic-unit" style="width:100%;box-sizing:border-box;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 6px;font-family:Inter,sans-serif;font-size:13px;outline:none;">
+            <option value="Quarts">Quarts</option>
+            <option value="Gallons">Gallons</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Hydraulic Filter #</label>
+        <input type="text" id="ev-hydraulic-filter" placeholder="AM125424">
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn-sm danger" onclick="deleteVehicle()" style="padding:10px 16px;">Delete Vehicle</button>
+        <button class="btn-sm" onclick="exportSingleVehicle()" style="padding:10px 16px;">⬇ Export Vehicle</button>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-secondary" onclick="closeModal('edit-vehicle-modal')">Cancel</button>
+        <button class="btn-primary" onclick="saveEditVehicle()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SERVICE MODAL -->
+<div class="modal-overlay" id="add-service-modal">
+  <div class="modal">
+    <h2 id="service-modal-title">Log Service</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="svc-date">
+      </div>
+      <div class="form-group">
+        <label>Mileage</label>
+        <input type="number" id="svc-mileage" placeholder="45000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Previous Services — tap to add</label>
+      <div id="svc-suggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+    </div>
+    <div class="form-group">
+      <label>Service Performed</label>
+      <textarea id="svc-desc" placeholder="Oil and filter change, tire rotation..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('add-service-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveService()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPDATE MILEAGE MODAL -->
+<div class="modal-overlay" id="mileage-modal">
+  <div class="modal">
+    <h2>Update Mileage</h2>
+    <div class="form-group">
+      <label>Current Mileage</label>
+      <input type="number" id="new-mileage" placeholder="50000">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('mileage-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveMileage()">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SERVICE MODAL -->
+<div class="modal-overlay" id="edit-service-modal">
+  <div class="modal">
+    <h2>Edit Service</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="edit-svc-date">
+      </div>
+      <div class="form-group">
+        <label>Mileage</label>
+        <input type="number" id="edit-svc-mileage">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Service Performed</label>
+      <textarea id="edit-svc-desc"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('edit-service-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveEditService()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PART MODAL -->
+<div class="modal-overlay" id="add-part-modal">
+  <div class="modal">
+    <h2>Add Part</h2>
+    <div class="form-group">
+      <label>Part Name</label>
+      <input type="text" id="part-name-input" placeholder="Spark Plugs, Wiper Blades...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Manufacturer</label>
+        <input type="text" id="part-mfr-input" placeholder="NGK, Fram, OEM...">
+      </div>
+      <div class="form-group">
+        <label>Part Number</label>
+        <input type="text" id="part-number-input" placeholder="96779">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('add-part-modal')">Cancel</button>
+      <button class="btn-primary" onclick="savePart()">Add Part</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT WIPER MODAL -->
+<div class="modal-overlay" id="edit-wiper-modal">
+  <div class="modal">
+    <h2>Edit Wiper Blades</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Driver Side</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="edit-wiper-driver" placeholder="26" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Driver Brand</label>
+        <input type="text" id="edit-wiper-driver-mfr" placeholder="Bosch, Rain-X...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Passenger Side</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="edit-wiper-passenger" placeholder="18" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Passenger Brand</label>
+        <input type="text" id="edit-wiper-passenger-mfr" placeholder="Bosch, Rain-X...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Rear (optional)</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="edit-wiper-rear" placeholder="12" style="flex:1;">
+          <span style="font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);">"</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Rear Brand</label>
+        <input type="text" id="edit-wiper-rear-mfr" placeholder="Bosch, Rain-X...">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('edit-wiper-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveEditWipers()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PRIMARY PART MODAL -->
+<div class="modal-overlay" id="edit-primary-part-modal">
+  <div class="modal">
+    <h2 id="edit-primary-part-title">Edit Part</h2>
+    <div class="form-group">
+      <label>Manufacturer</label>
+      <input type="text" id="edit-primary-mfr" placeholder="NGK, Fram, Toyota OEM...">
+    </div>
+    <div class="form-group">
+      <label>Part Number</label>
+      <input type="text" id="edit-primary-number" placeholder="CA10171">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('edit-primary-part-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveEditPrimaryPart()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PART MODAL -->
+<div class="modal-overlay" id="edit-part-modal">
+  <div class="modal">
+    <h2>Edit Part</h2>
+    <div class="form-group">
+      <label>Part Name</label>
+      <input type="text" id="edit-part-name-input" placeholder="Spark Plugs, Wiper Blades...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Manufacturer</label>
+        <input type="text" id="edit-part-mfr-input" placeholder="NGK, Fram, OEM...">
+      </div>
+      <div class="form-group">
+        <label>Part Number</label>
+        <input type="text" id="edit-part-number-input" placeholder="96779">
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="btn-sm danger" onclick="deletePartFromModal()" style="padding:8px 14px;">Delete Part</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" onclick="closeModal('edit-part-modal')">Cancel</button>
+        <button class="btn-primary" onclick="saveEditPart()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CROP MODAL -->
+<div class="modal-overlay" id="crop-modal" style="z-index:250;">
+  <div class="modal" style="max-width:520px;padding:20px;">
+    <h2>Crop Photo</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Drag the crop box to reposition · Drag corners to resize · Scroll to zoom</p>
+    <div id="crop-container" style="position:relative;width:100%;height:320px;background:#111;overflow:hidden;cursor:move;touch-action:none;">
+      <img id="crop-img" style="position:absolute;transform-origin:top left;" draggable="false">
+      <div id="crop-box" style="position:absolute;border:2px solid var(--garage-red);box-shadow:0 0 0 9999px rgba(0,0,0,0.55);cursor:move;">
+        <div class="crop-handle" data-pos="tl" style="top:-5px;left:-5px;"></div>
+        <div class="crop-handle" data-pos="tr" style="top:-5px;right:-5px;"></div>
+        <div class="crop-handle" data-pos="bl" style="bottom:-5px;left:-5px;"></div>
+        <div class="crop-handle" data-pos="br" style="bottom:-5px;right:-5px;"></div>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="cancelCrop()">Cancel</button>
+      <button class="btn-primary" onclick="applyCrop()">Use Photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOnBg(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-counter" id="lightbox-counter"></div>
+  <div class="lightbox-actions">
+    <button class="lightbox-btn" onclick="lightboxNav(-1)">← Prev</button>
+    <button class="lightbox-btn" id="default-photo-btn" onclick="setDefaultPhoto()">★ Set Default</button>
+    <button class="lightbox-btn danger" onclick="deleteCurrentPhoto()">Delete</button>
+    <button class="lightbox-btn" onclick="lightboxNav(1)">Next →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="undo-toast" id="undo-toast">
+  <span id="undo-toast-msg"></span>
+  <button onclick="performUndo()">Undo</button>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+// Excel serial date to readable string
+function excelDate(serial) {
+  if (!serial || isNaN(serial) || serial < 1) return '—';
+  const date = new Date((serial - 25569) * 86400 * 1000);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+let vehicles = [];
+
+let currentVehicleId = null;
+let editingServiceId = null;
+const EMOJI = { Ford: '🚙', Toyota: '🚗', Nissan: '🚐', BMW: '🏎️', 'John Deere': '🚜', 'Great Dane': '🛵' };
+
+function getEmoji(make) { return EMOJI[make] || '🚗'; }
+
+function save() {
+  localStorage.setItem('mygarage_data', JSON.stringify({ vehicles, serviceItems }));
+  if (gDriveReady) scheduleDriveSave();
+}
+function load() {
+  // Try new combined key first
+  const combined = localStorage.getItem('mygarage_data');
+  if (combined) {
+    const d = JSON.parse(combined);
+    if (d.vehicles) vehicles = d.vehicles;
+    if (d.serviceItems) serviceItems = d.serviceItems.map(item => {
+      if (typeof item === 'string' && item.trim()) return { name: item.trim(), enabled: true };
+      if (item && typeof item === 'object' && item.name) return { name: item.name, enabled: item.enabled !== false };
+      return null;
+    }).filter(Boolean);
+    return;
+  }
+  // Fall back to old separate keys
+  const v = localStorage.getItem('mygarage_vehicles');
+  if (v) vehicles = JSON.parse(v);
+  const s = localStorage.getItem('mygarage_service_items');
+  if (s) {
+    const parsed = JSON.parse(s);
+    serviceItems = parsed.map(item => {
+      if (typeof item === 'string' && item.trim()) return { name: item.trim(), enabled: true };
+      if (item && typeof item === 'object' && item.name) return { name: item.name, enabled: item.enabled !== false };
+      return null;
+    }).filter(Boolean);
+  }
+  // Migrate to new combined key
+  if (v || s) save();
+}
+
+// ── GOOGLE DRIVE SYNC ─────────────────────────────────────────────
+// ── CONFIG: fill in your own Google OAuth Client ID below ──
+// Get a free one at https://console.cloud.google.com — see README.md.
+// Leave the placeholder as-is if you don't want Google Drive sync;
+// the app works fully offline with local browser storage either way.
+const GDRIVE_CLIENT_ID = 'YOUR_GOOGLE_OAUTH_CLIENT_ID_HERE';
+const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const GDRIVE_FILENAME = 'my-garage-data.json';
+
+let gAccessToken = null;
+let gDriveReady = false;
+let gDriveFileId = null;
+let gSaveTimer = null;
+let gTokenClient = null;
+
+function initGoogleAuth() {
+  if (!window.google || !window.google.accounts) {
+    setSyncStatus('Google unavailable — check connection', false);
+    return;
+  }
+  try {
+    gTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GDRIVE_CLIENT_ID,
+      scope: GDRIVE_SCOPES,
+      callback: async (resp) => {
+        if (resp.error) {
+          setSyncStatus('Sign-in failed: ' + (resp.error_description || resp.error), false);
+          return;
+        }
+        gAccessToken = resp.access_token;
+        gDriveReady = true;
+        localStorage.setItem('mygarage_gtoken', '1');
+        setSyncStatus('Syncing...', true);
+        document.getElementById('sync-btn').textContent = 'Sign out';
+        await loadFromDrive();
+      }
+    });
+
+    if (localStorage.getItem('mygarage_gtoken')) {
+      // Previously signed in — try silent reconnect first
+      setSyncStatus('Reconnecting...', false);
+      gTokenClient.requestAccessToken({ prompt: '' });
+    } else {
+      // Never signed in — auto-trigger the sign-in prompt
+      setSyncStatus('Signing in...', false);
+      setTimeout(() => {
+        try { gTokenClient.requestAccessToken({ prompt: 'select_account' }); } catch(e) {
+          setSyncStatus('Click Sign in with Google to sync', false);
+        }
+      }, 1000);
+    }
+  } catch(err) {
+    setSyncStatus('Google init error: ' + err.message, false);
+  }
+}
+
+function handleSyncBtn() {
+  if (gDriveReady) {
+    if (confirm('Sign out of Google? Your data will still be saved locally.')) {
+      const token = gAccessToken;
+      gAccessToken = null;
+      gDriveReady = false;
+      gDriveFileId = null;
+      localStorage.removeItem('mygarage_gtoken');
+      try { google.accounts.oauth2.revoke(token, () => {}); } catch(e) {}
+      setSyncStatus('Not signed in — data saved locally only', false);
+      document.getElementById('sync-btn').textContent = 'Sign in';
+    }
+  } else if (gTokenClient) {
+    // Fire directly — no intermediate steps so browser doesn't block popup
+    gTokenClient.requestAccessToken({ prompt: 'select_account' });
+  } else {
+    setSyncStatus('Google not loaded yet — try refreshing the page', false);
+  }
+}
+
+function setSyncStatus(msg, synced) {
+  document.getElementById('sync-status').textContent = msg;
+  document.getElementById('sync-status').style.color = synced ? 'var(--green)' : 'var(--muted)';
+  document.getElementById('sync-btn').textContent = synced ? 'Sign out' : 'Sign in with Google';
+}
+
+function scheduleDriveSave() {
+  if (gSaveTimer) clearTimeout(gSaveTimer);
+  gSaveTimer = setTimeout(saveToDrive, 1500);
+}
+
+async function saveToDrive() {
+  if (!gAccessToken) return;
+  setSyncStatus('Saving to Google Drive...', true);
+  try {
+    const data = JSON.stringify({ version: 1, vehicles, serviceItems });
+    const metadata = { name: GDRIVE_FILENAME, parents: ['appDataFolder'] };
+
+    if (!gDriveFileId) gDriveFileId = await findDriveFile();
+
+    if (gDriveFileId) {
+      // Update existing file
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${gDriveFileId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'Bearer ' + gAccessToken, 'Content-Type': 'application/json' },
+        body: data
+      });
+    } else {
+      // Create new file
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', new Blob([data], { type: 'application/json' }));
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + gAccessToken },
+        body: form
+      });
+      const json = await res.json();
+      gDriveFileId = json.id;
+    }
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setSyncStatus(`Synced to Google Drive · ${now}`, true);
+  } catch(err) {
+    setSyncStatus('Sync error — saved locally', false);
+  }
+}
+
+async function loadFromDrive() {
+  if (!gAccessToken) return;
+  try {
+    gDriveFileId = await findDriveFile();
+    if (!gDriveFileId) {
+      // No file yet — save current local data to Drive
+      await saveToDrive();
+      return;
+    }
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${gDriveFileId}?alt=media`, {
+      headers: { 'Authorization': 'Bearer ' + gAccessToken }
+    });
+    const data = await res.json();
+    if (data.vehicles && Array.isArray(data.vehicles)) {
+      // Merge: Drive wins if it has more recent/more vehicles
+      if (data.vehicles.length >= vehicles.length) {
+        vehicles = data.vehicles;
+        serviceItems = data.serviceItems || serviceItems;
+        save();
+        saveServiceItems();
+        renderGarage();
+      } else {
+        // Local has more — push local to Drive
+        await saveToDrive();
+      }
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setSyncStatus(`Synced · ${now}`, true);
+    }
+  } catch(err) {
+    setSyncStatus('Could not load from Drive — using local data', false);
+  }
+}
+
+async function findDriveFile() {
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${GDRIVE_FILENAME}'&fields=files(id)`,
+    { headers: { 'Authorization': 'Bearer ' + gAccessToken } }
+  );
+  const json = await res.json();
+  return (json.files && json.files.length) ? json.files[0].id : null;
+}
+
+// Manual sync button in settings
+function manualSync() {
+  if (!gDriveReady) {
+    alert('Please sign in with Google first.');
+    return;
+  }
+  loadFromDrive();
+  showToast('Syncing...');
+}
+
+// ── RENDER GARAGE ──────────────────────────────────────────────────
+let reorderMode = false;
+let dragSrcId = null;
+
+function toggleReorder() {
+  reorderMode = !reorderMode;
+  const btn = document.getElementById('reorder-btn');
+  btn.textContent = reorderMode ? '✓ Done' : '⇅ Reorder';
+  btn.style.borderColor = reorderMode ? 'var(--green)' : '#444';
+  btn.style.color = reorderMode ? 'var(--green)' : 'var(--muted)';
+  renderGarage();
+}
+
+function renderGarage() {
+  const grid = document.getElementById('vehicle-grid');
+  grid.innerHTML = '';
+  vehicles.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'vehicle-card' + (reorderMode ? ' reorder-mode' : '');
+    card.dataset.id = v.id;
+
+    const firstPhoto = (v.photos && v.photos.length) ? v.photos[0] : v.photo;
+    const photoHtml = firstPhoto
+      ? `<img class="vehicle-photo" src="${firstPhoto}" alt="${v.model}">`
+      : `<div class="vehicle-photo-placeholder">${getEmoji(v.make)}</div>`;
+
+    card.innerHTML = `
+      ${reorderMode ? '<div class="drag-handle">☰</div>' : ''}
+      ${photoHtml}
+      <div class="vehicle-info">
+        <div class="vehicle-year">${v.year} ${v.make}</div>
+        <div class="vehicle-name">${v.model}</div>
+        ${v.tag ? `<div class="vehicle-tag">${v.tag}</div>` : ''}
+      </div>`;
+
+    if (reorderMode) {
+      // Desktop drag
+      card.draggable = true;
+      card.addEventListener('dragstart', e => {
+        dragSrcId = v.id;
+        setTimeout(() => card.classList.add('dragging'), 0);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+      card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+      card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+      card.addEventListener('drop', e => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        if (dragSrcId && dragSrcId !== v.id) {
+          const fromIdx = vehicles.findIndex(x => x.id === dragSrcId);
+          const toIdx = vehicles.findIndex(x => x.id === v.id);
+          const [moved] = vehicles.splice(fromIdx, 1);
+          vehicles.splice(toIdx, 0, moved);
+          save();
+          renderGarage();
+        }
+      });
+      // Touch drag
+      let touchDragCard = null, touchClone = null;
+      card.addEventListener('touchstart', e => {
+        dragSrcId = v.id;
+        touchDragCard = card;
+        const t = e.touches[0];
+        touchClone = card.cloneNode(true);
+        touchClone.style.cssText = `position:fixed;opacity:0.85;pointer-events:none;z-index:999;width:${card.offsetWidth}px;border:2px solid var(--garage-red);top:0;left:0;`;
+        touchClone.style.transform = `translate(${t.clientX - card.offsetWidth/2}px, ${t.clientY - card.offsetHeight/2}px) scale(1.05)`;
+        document.body.appendChild(touchClone);
+        card.classList.add('dragging');
+        document.body.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+        e.preventDefault();
+      }, { passive: false });
+      card.addEventListener('touchmove', e => {
+        if (!touchClone) return;
+        e.preventDefault();
+        const t = e.touches[0];
+        touchClone.style.transform = `translate(${t.clientX - touchDragCard.offsetWidth/2}px, ${t.clientY - touchDragCard.offsetHeight/2}px) scale(1.05)`;
+        touchClone.style.display = 'none';
+        const el = document.elementFromPoint(t.clientX, t.clientY);
+        touchClone.style.display = '';
+        const overCard = el && el.closest('.vehicle-card[data-id]');
+        document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('drag-over'));
+        if (overCard && overCard.dataset.id !== dragSrcId) overCard.classList.add('drag-over');
+      }, { passive: false });
+      card.addEventListener('touchend', e => {
+        if (touchClone) { touchClone.remove(); touchClone = null; }
+        card.classList.remove('dragging');
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        const overCard = document.querySelector('.vehicle-card.drag-over');
+        if (overCard && overCard.dataset.id && overCard.dataset.id !== dragSrcId) {
+          const fromIdx = vehicles.findIndex(x => x.id === dragSrcId);
+          const toIdx = vehicles.findIndex(x => x.id === overCard.dataset.id);
+          const [moved] = vehicles.splice(fromIdx, 1);
+          vehicles.splice(toIdx, 0, moved);
+          save();
+          renderGarage();
+        }
+        document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('drag-over'));
+      }, { passive: false });
+    } else {
+      card.onclick = () => openVehicle(v.id);
+    }
+
+    grid.appendChild(card);
+  });
+
+  if (!reorderMode) {
+    const addCard = document.createElement('div');
+    addCard.className = 'add-card';
+    addCard.onclick = showAddVehicleModal;
+    addCard.innerHTML = `<div class="plus">+</div><div>Add Vehicle</div>`;
+    grid.appendChild(addCard);
+
+    const importCard = document.createElement('label');
+    importCard.className = 'add-card';
+    importCard.style.cursor = 'pointer';
+    importCard.innerHTML = `<div class="plus" style="font-size:24px;">⬆</div><div>Import Vehicle</div><input type="file" accept=".json" style="display:none;" onchange="importSingleVehicle(event)">`;
+    grid.appendChild(importCard);
+  }
+}
+
+// ── VEHICLE DETAIL ─────────────────────────────────────────────────
+let lightboxIndex = 0;
+
+function openVehicle(id) {
+  currentVehicleId = id;
+  const v = vehicles.find(x => x.id === id);
+  if (!v.photos) v.photos = v.photo ? [v.photo] : [];
+  _historySearchTerm = '';
+
+  document.getElementById('detail-year-make').textContent = `${v.year} ${v.make}`.trim();
+  document.getElementById('detail-model').textContent = v.model;
+  document.getElementById('detail-tag').innerHTML = v.tag ? `<span class="tag-badge">${v.tag}</span>` : '';
+
+  const hero = document.getElementById('detail-hero');
+  const existing = hero.querySelector('.detail-hero-photo');
+  if (existing) existing.remove();
+  const placeholder = hero.querySelector('.detail-hero-placeholder');
+  if (placeholder) placeholder.remove();
+
+  if (v.photos.length) {
+    const img = document.createElement('img');
+    img.className = 'detail-hero-photo';
+    img.src = v.photos[0];
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.8;cursor:pointer;';
+    img.onclick = () => openLightbox(0);
+    hero.insertBefore(img, hero.firstChild);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'detail-hero-placeholder';
+    ph.textContent = getEmoji(v.make);
+    hero.insertBefore(ph, hero.firstChild);
+  }
+
+  renderGallery(v);
+  renderSpecs(v);
+  renderParts(v);
+  renderHistory(v);
+  renderNotes(v);
+  switchTab('specs');
+  showView('detail-view');
+}
+
+function renderGallery(v) {
+  const scroll = document.getElementById('gallery-scroll');
+  scroll.innerHTML = '';
+  (v.photos || []).forEach((src, i) => {
+    const img = document.createElement('img');
+    img.className = 'gallery-thumb';
+    img.src = src;
+    img.onclick = () => openLightbox(i);
+    scroll.appendChild(img);
+  });
+  // Add photo button
+  const addBtn = document.createElement('label');
+  addBtn.className = 'gallery-add';
+  addBtn.title = 'Add photo';
+  addBtn.innerHTML = '＋<input type="file" accept="image/*" style="display:none;" onchange="addVehiclePhoto(event)">';
+  scroll.appendChild(addBtn);
+}
+
+function openLightbox(idx) {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  lightboxIndex = idx;
+  document.getElementById('lightbox-img').src = v.photos[idx];
+  document.getElementById('lightbox-counter').textContent = `${idx + 1} / ${v.photos.length}`;
+  document.getElementById('lightbox').classList.add('active');
+  updateDefaultBtn(v);
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+function closeLightboxOnBg(e) {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+}
+
+function lightboxNav(dir) {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  lightboxIndex = (lightboxIndex + dir + v.photos.length) % v.photos.length;
+  document.getElementById('lightbox-img').src = v.photos[lightboxIndex];
+  document.getElementById('lightbox-counter').textContent = `${lightboxIndex + 1} / ${v.photos.length}`;
+  updateDefaultBtn(v);
+}
+
+function updateDefaultBtn(v) {
+  const btn = document.getElementById('default-photo-btn');
+  const isDefault = (v.defaultPhoto === lightboxIndex) || (!v.defaultPhoto && lightboxIndex === 0);
+  btn.textContent = isDefault ? '★ Default' : '☆ Set Default';
+  btn.style.color = isDefault ? 'var(--accent)' : '';
+  btn.style.borderColor = isDefault ? 'var(--accent)' : '';
+}
+
+function setDefaultPhoto() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  // Move selected photo to index 0 (first = default)
+  const [selected] = v.photos.splice(lightboxIndex, 1);
+  v.photos.unshift(selected);
+  lightboxIndex = 0;
+  save();
+  renderGallery(v);
+  updateDefaultBtn(v);
+  showToast('Default photo set!');
+  // Refresh hero image
+  const hero = document.getElementById('detail-hero');
+  const existing = hero.querySelector('.detail-hero-photo');
+  if (existing) existing.src = v.photos[0];
+}
+
+function deleteCurrentPhoto() {
+  if (!confirm('Remove this photo?')) return;
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  v.photos.splice(lightboxIndex, 1);
+  if (lightboxIndex >= v.photos.length) lightboxIndex = Math.max(0, v.photos.length - 1);
+  save();
+  closeLightbox();
+  openVehicle(currentVehicleId);
+  showToast('Photo removed.');
+}
+
+// ── CROP ──────────────────────────────────────────────────────────
+let _cropOrigSrc = null;
+let _cropImgNatW = 0, _cropImgNatH = 0;
+let _imgX = 0, _imgY = 0, _imgScale = 1;
+let _boxX = 0, _boxY = 0, _boxW = 0, _boxH = 0;
+let _drag = null; // {type:'img'|'box'|'handle', startX, startY, origX, origY, origW, origH, pos}
+
+function addVehiclePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _cropOrigSrc = e.target.result;
+    openCropModal(_cropOrigSrc);
+  };
+  reader.readAsDataURL(file);
+}
+
+function openCropModal(src) {
+  const modal = document.getElementById('crop-modal');
+  const container = document.getElementById('crop-container');
+  const img = document.getElementById('crop-img');
+  modal.classList.add('active');
+
+  img.onload = () => {
+    _cropImgNatW = img.naturalWidth;
+    _cropImgNatH = img.naturalHeight;
+    const cW = container.clientWidth;
+    const cH = container.clientHeight;
+    _imgScale = Math.min(cW / _cropImgNatW, cH / _cropImgNatH);
+    _imgX = (cW - _cropImgNatW * _imgScale) / 2;
+    _imgY = (cH - _cropImgNatH * _imgScale) / 2;
+    applyImgTransform();
+
+    // Initial crop box = 80% of displayed image
+    const dW = _cropImgNatW * _imgScale;
+    const dH = _cropImgNatH * _imgScale;
+    _boxW = dW * 0.8; _boxH = dH * 0.8;
+    _boxX = _imgX + (dW - _boxW) / 2;
+    _boxY = _imgY + (dH - _boxH) / 2;
+    applyCropBox();
+  };
+  img.src = src;
+
+  // Event listeners
+  container.onmousedown = cropMouseDown;
+  container.ontouchstart = cropTouchStart;
+  container.onwheel = cropWheel;
+}
+
+function applyImgTransform() {
+  const img = document.getElementById('crop-img');
+  img.style.transform = `translate(${_imgX}px,${_imgY}px) scale(${_imgScale})`;
+}
+
+function applyCropBox() {
+  const box = document.getElementById('crop-box');
+  box.style.left = _boxX + 'px';
+  box.style.top = _boxY + 'px';
+  box.style.width = _boxW + 'px';
+  box.style.height = _boxH + 'px';
+}
+
+function cropMouseDown(e) {
+  const box = document.getElementById('crop-box');
+  const boxR = box.getBoundingClientRect();
+  const conR = document.getElementById('crop-container').getBoundingClientRect();
+  const mx = e.clientX - conR.left, my = e.clientY - conR.top;
+  const handle = e.target.closest('.crop-handle');
+  if (handle) {
+    _drag = { type:'handle', pos: handle.dataset.pos, startX: mx, startY: my, origX: _boxX, origY: _boxY, origW: _boxW, origH: _boxH };
+  } else {
+    // Clicking anywhere outside handles moves the crop box
+    _drag = { type:'box', startX: mx, startY: my, origX: _boxX, origY: _boxY };
+  }
+  window.onmousemove = cropMouseMove;
+  window.onmouseup = () => { _drag = null; window.onmousemove = null; };
+  e.preventDefault();
+}
+
+function cropMouseMove(e) {
+  if (!_drag) return;
+  const conR = document.getElementById('crop-container').getBoundingClientRect();
+  const mx = e.clientX - conR.left, my = e.clientY - conR.top;
+  cropApplyDrag(mx, my);
+}
+
+function cropTouchStart(e) {
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    const conR = document.getElementById('crop-container').getBoundingClientRect();
+    const mx = t.clientX - conR.left, my = t.clientY - conR.top;
+    const box = document.getElementById('crop-box');
+    const handle = e.target.closest('.crop-handle');
+    if (handle) {
+      _drag = { type:'handle', pos: handle.dataset.pos, startX: mx, startY: my, origX: _boxX, origY: _boxY, origW: _boxW, origH: _boxH };
+    } else {
+      _drag = { type:'box', startX: mx, startY: my, origX: _boxX, origY: _boxY };
+    }
+    e.preventDefault();
+  }
+}
+
+document.addEventListener('touchmove', e => {
+  if (!_drag) return;
+  if (e.touches.length === 1) {
+    const conR = document.getElementById('crop-container').getBoundingClientRect();
+    const t = e.touches[0];
+    cropApplyDrag(t.clientX - conR.left, t.clientY - conR.top);
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', () => { _drag = null; });
+
+function cropApplyDrag(mx, my) {
+  const dx = mx - _drag.startX, dy = my - _drag.startY;
+  const MIN = 40;
+  if (_drag.type === 'box') {
+    _boxX = _drag.origX + dx; _boxY = _drag.origY + dy;
+    applyCropBox();
+  } else if (_drag.type === 'handle') {
+    let { origX: bx, origY: by, origW: bw, origH: bh, pos } = _drag;
+    if (pos === 'br') { bw = Math.max(MIN, bw + dx); bh = Math.max(MIN, bh + dy); }
+    else if (pos === 'bl') { const nw = Math.max(MIN, bw - dx); bx = bx + (bw - nw); bw = nw; bh = Math.max(MIN, bh + dy); }
+    else if (pos === 'tr') { bw = Math.max(MIN, bw + dx); const nh = Math.max(MIN, bh - dy); by = by + (bh - nh); bh = nh; }
+    else if (pos === 'tl') { const nw = Math.max(MIN, bw - dx); bx = bx + (bw - nw); bw = nw; const nh = Math.max(MIN, bh - dy); by = by + (bh - nh); bh = nh; }
+    _boxX = bx; _boxY = by; _boxW = bw; _boxH = bh;
+    applyCropBox();
+  }
+}
+
+function cropWheel(e) {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  _imgScale = Math.max(0.1, Math.min(10, _imgScale * delta));
+  applyImgTransform();
+}
+
+function cancelCrop() {
+  document.getElementById('crop-modal').classList.remove('active');
+  document.getElementById('crop-img').src = '';
+  _cropOrigSrc = null;
+}
+
+function applyCrop() {
+  const container = document.getElementById('crop-container');
+  // Crop box in container coords -> map back to natural image coords
+  const cropX = (_boxX - _imgX) / _imgScale;
+  const cropY = (_boxY - _imgY) / _imgScale;
+  const cropW = _boxW / _imgScale;
+  const cropH = _boxH / _imgScale;
+
+  const canvas = document.createElement('canvas');
+  const MAX = 600;
+  let outW = Math.min(cropW, MAX);
+  let outH = cropH * (outW / cropW);
+  canvas.width = outW; canvas.height = outH;
+
+  const img = new Image();
+  img.onload = () => {
+    canvas.getContext('2d').drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
+    const resized = canvas.toDataURL('image/jpeg', 0.6);
+    const v = vehicles.find(x => x.id === currentVehicleId);
+    if (!v.photos) v.photos = [];
+    v.photos.push(resized);
+    try {
+      save();
+      cancelCrop();
+      openVehicle(currentVehicleId);
+      showToast('Photo saved!');
+    } catch(err) {
+      v.photos.pop();
+      cancelCrop();
+      showToast('Not enough storage — try a smaller image');
+    }
+  };
+  img.src = _cropOrigSrc;
+}
+
+function renderSpecs(v) {
+  const s = v.specs;
+  const label = v.isHours ? 'Current Hours' : 'Current Mileage';
+  const mileageVal = v.isHours ? v.mileage.toLocaleString() + ' hrs' : v.mileage.toLocaleString() + ' mi';
+
+  const specCell = (lbl, val, mono) => val
+    ? `<div class="spec-cell"><div class="spec-label">${lbl}</div><div class="spec-value${mono ? ' mono' : ''}">${val}</div></div>`
+    : '';
+
+  const specsGrid = [
+    specCell('Oil Capacity', s.oilCap),
+    specCell('Oil Weight', s.oilWeight, true),
+    specCell('Lug Nut Torque', s.torque),
+    specCell('Drain Plug Wrench', s.wrench, true),
+    specCell('Hydraulic Fluid', s.hydraulicFluid, true),
+    specCell('Hydraulic Capacity', s.hydraulicCap)
+  ].filter(Boolean).join('');
+
+  const wipersHtml = Object.keys(v.wipers || {}).length ? `
+    <div style="margin-top:16px;">
+      <div class="parts-title">Wiper Blades</div>
+      <div class="wiper-grid">
+        ${v.wipers.driver ? `<div class="spec-cell"><div class="spec-label">Driver</div><div class="spec-value">${v.wipers.driver}</div></div>` : ''}
+        ${v.wipers.passenger ? `<div class="spec-cell"><div class="spec-label">Passenger</div><div class="spec-value">${v.wipers.passenger}</div></div>` : ''}
+        ${v.wipers.rear ? `<div class="spec-cell"><div class="spec-label">Rear</div><div class="spec-value">${v.wipers.rear}</div></div>` : ''}
+      </div>
+    </div>` : '';
+
+  document.getElementById('tab-specs').innerHTML = `
+    <div class="mileage-banner">
+      <div>
+        <div class="mileage-label">${label}</div>
+        <div class="mileage-num">${mileageVal}</div>
+      </div>
+      <button class="mileage-update-btn" onclick="showMileageModal()">Update</button>
+    </div>
+    ${(!v.isHours && (!v.vehicleType || v.vehicleType === 'vehicle')) ? `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--panel);padding:12px 14px;margin-bottom:16px;">
+      <div style="flex:1;">
+        <div class="spec-label">License Plate</div>
+        <input id="tag-input" type="text" value="${v.tag || ''}" placeholder="Tap to add plate number" style="background:transparent;border:none;border-bottom:1px solid ${v.tag ? '#444' : '#2a2a2a'};color:var(--chrome);font-family:'Roboto Mono',monospace;font-size:15px;font-weight:600;width:100%;outline:none;padding:4px 0;text-transform:uppercase;">
+      </div>
+      <button class="mileage-update-btn" onclick="saveTag()">Save</button>
+    </div>` : ''}
+    ${v.inspectionMonth ? `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--panel);padding:12px 14px;margin-bottom:16px;">
+      <div style="flex:1;">
+        <div class="spec-label">Inspection Month</div>
+        <div class="spec-value">${v.inspectionMonth}</div>
+      </div>
+      <button class="mileage-update-btn" onclick="downloadInspectionReminder('${v.id}')">📅 Remind Me</button>
+    </div>` : ''}
+    ${specsGrid ? `<div class="specs-grid">${specsGrid}</div>` : ''}
+    ${wipersHtml}
+  `;
+}
+
+function downloadInspectionReminder(vehicleId) {
+  const v = vehicles.find(x => x.id === vehicleId);
+  if (!v || !v.inspectionMonth) return;
+
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const inspectionMonthIdx = months.indexOf(v.inspectionMonth);
+  if (inspectionMonthIdx === -1) return;
+
+  // Reminder = 1st of the month BEFORE inspection month, next occurrence
+  let reminderMonthIdx = inspectionMonthIdx - 1;
+  let year = new Date().getFullYear();
+  if (reminderMonthIdx < 0) { reminderMonthIdx = 11; }
+
+  const today = new Date();
+  let reminderDate = new Date(year, reminderMonthIdx, 1);
+  // If that date already passed this year, push to next year
+  if (reminderDate < today) {
+    reminderDate = new Date(year + 1, reminderMonthIdx, 1);
+  }
+
+  const pad = n => String(n).padStart(2, '0');
+  const dateStr = `${reminderDate.getFullYear()}${pad(reminderDate.getMonth()+1)}${pad(reminderDate.getDate())}`;
+  const endDate = new Date(reminderDate);
+  endDate.setDate(endDate.getDate() + 1);
+  const endDateStr = `${endDate.getFullYear()}${pad(endDate.getMonth()+1)}${pad(endDate.getDate())}`;
+
+  const title = `${v.year} ${v.make} ${v.model} - Inspection Due Next Month`;
+  const desc = `Yearly reminder: ${v.year} ${v.make} ${v.model} inspection is due in ${v.inspectionMonth}. Plate: ${v.tag || 'N/A'}. This event repeats every year.`;
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//My Garage//Inspection Reminder//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${v.id}-inspection-${Date.now()}@theshed`,
+    `DTSTAMP:${dateStr}T090000Z`,
+    `DTSTART;VALUE=DATE:${dateStr}`,
+    `DTEND;VALUE=DATE:${endDateStr}`,
+    'RRULE:FREQ=YEARLY',
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${desc}`,
+    'BEGIN:VALARM',
+    'TRIGGER:-P0D',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:${title}`,
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([ics], { type: 'text/calendar' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${v.make}-${v.model}-inspection-reminder.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Yearly reminder downloaded!');
+}
+
+function amazonLink(partNum) {
+  return `https://www.amazon.com/s?k=${encodeURIComponent(partNum)}`;
+}
+
+function amazonVehicleLink(query, v) {
+  const vehicleStr = `${v.year || ''} ${v.make || ''} ${v.model || ''}`.trim();
+  const full = `${vehicleStr} ${query}`.trim();
+  return `https://www.amazon.com/s?k=${encodeURIComponent(full)}`;
+}
+
+function primaryPartRow(label, field, number, mfr) {
+  if (!number || number === 'N/A' || number === '0') {
+    return `<div class="part-row">
+      <div class="part-name">${label}</div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);">—</div>
+      <div class="part-number" style="color:var(--muted);font-size:12px;">Not set</div>
+      <div style="justify-self:end;"><button class="btn-sm" onclick="showEditPrimaryPartModal('${field}')">Edit</button></div>
+    </div>`;
+  }
+  const searchQuery = mfr ? `${mfr} ${number}` : number;
+  return `<div class="part-row">
+    <div class="part-name">${label}</div>
+    <div style="font-family:'Roboto Mono',monospace;font-size:12px;color:var(--accent);text-align:center;">${mfr || '—'}</div>
+    <div class="part-number">${number}</div>
+    <div style="display:flex;align-items:center;gap:4px;justify-self:end;">
+      <a class="amazon-btn" href="${amazonLink(searchQuery)}" target="_blank">Amazon →</a>
+      <button class="btn-sm" onclick="showEditPrimaryPartModal('${field}')">Edit</button>
+    </div>
+  </div>`;
+}
+
+function partRow(name, number, idx, mfr) {
+  if (!number || number === 'N/A' || number === '0') return '';
+  const btns = idx !== undefined ? `<button class="btn-sm" onclick="showEditPartModal(${idx})">Edit</button>` : '';
+  const searchQuery = mfr ? `${mfr} ${number}` : number;
+  return `<div class="part-row">
+    <div class="part-name">${name}</div>
+    <div style="font-family:'Roboto Mono',monospace;font-size:12px;color:var(--accent);text-align:center;">${mfr || '—'}</div>
+    <div class="part-number">${number}</div>
+    <div style="display:flex;align-items:center;gap:4px;justify-self:end;">
+      <a class="amazon-btn" href="${amazonLink(searchQuery)}" target="_blank">Amazon →</a>
+      ${btns}
+    </div>
+  </div>`;
+}
+
+function wiperPartRow(label, size, v) {
+  if (!size) return '';
+  const query = `wiper blade ${size}`;
+  return `<div class="part-row">
+    <div class="part-name">${label}</div>
+    <div style="text-align:center;color:var(--muted);">—</div>
+    <div class="part-number">${size}</div>
+    <div style="justify-self:end;"><a class="amazon-btn" href="${amazonVehicleLink(query, v)}" target="_blank">Amazon →</a></div>
+  </div>`;
+}
+
+function renderParts(v) {
+  const s = v.specs || {};
+  const w = v.wipers || {};
+
+  const colHeaders = `<div class="part-row" style="border-bottom:1px solid #333;padding-bottom:6px;margin-bottom:4px;">
+    <div class="part-name" style="font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Part</div>
+    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Brand</div>
+    <div class="part-number" style="font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Number</div>
+    <div></div>
+  </div>`;
+
+  const makeRow = (label, number, mfr, editBtn, customAmazon) => {
+    if (!number || number === 'N/A' || number === '0') return '';
+    const searchQuery = mfr ? `${mfr} ${number}` : number;
+    const amazonHtml = customAmazon ? '' : `<a class="amazon-btn" href="${amazonLink(searchQuery)}" target="_blank">Amazon →</a>`;
+    return `<div class="part-row">
+      <div class="part-name">${label}</div>
+      <div style="font-family:'Roboto Mono',monospace;font-size:12px;color:var(--accent);text-align:center;">${mfr || '—'}</div>
+      <div class="part-number">${number}</div>
+      <div style="display:flex;align-items:center;gap:4px;justify-self:end;">${amazonHtml}${editBtn || ''}</div>
+    </div>`;
+  };
+
+  const section = (title, rows) => {
+    const content = rows.filter(Boolean).join('');
+    return content ? `<div class="parts-section"><div class="parts-title">${title}</div>${colHeaders}${content}</div>` : '';
+  };
+
+  // Categorize altParts by name keywords
+  const altOil = [], altAir = [], altCabin = [], altOther = [];
+  (v.altParts || []).forEach((p, i) => {
+    const n = p.name.toLowerCase();
+    const editDel = `<button class="btn-sm" onclick="showEditPartModal(${i})" style="margin-left:4px;">Edit</button>`;
+    const row = makeRow(p.name, p.number, p.mfr, editDel);
+    if (n.includes('oil filter') || n.includes('oil')) altOil.push(row);
+    else if (n.includes('air filter') || n.includes('air')) altAir.push(row);
+    else if (n.includes('cabin filter') || n.includes('cabin')) altCabin.push(row);
+    else altOther.push(row);
+  });
+
+  // Oil Filters
+  const oilRows = [
+    makeRow('Oil Filter', s.oilFilter, s.oilFilterMfr || '', `<button class="btn-sm" onclick="showEditPrimaryPartModal('oilFilter')" style="margin-left:4px;">Edit</button>`),
+    ...altOil
+  ];
+
+  // Air Filters
+  const airRows = [
+    makeRow('Air Filter', s.airFilter, s.airFilterMfr || '', `<button class="btn-sm" onclick="showEditPrimaryPartModal('airFilter')" style="margin-left:4px;">Edit</button>`),
+    ...altAir
+  ];
+
+  // Cabin Filters
+  const cabinRows = [
+    makeRow('Cabin Filter', s.cabinFilter, s.cabinFilterMfr || '', `<button class="btn-sm" onclick="showEditPrimaryPartModal('cabinFilter')" style="margin-left:4px;">Edit</button>`),
+    ...altCabin
+  ];
+
+  // Wiper Blades
+  const wiperRows = [
+    { size: w.driver,    mfr: w.driverMfr    || '', label: 'Driver Side' },
+    { size: w.passenger, mfr: w.passengerMfr || '', label: 'Passenger Side' },
+    { size: w.rear,      mfr: w.rearMfr      || '', label: 'Rear' }
+  ].filter(x => x.size).map(x => {
+    const query = x.mfr
+      ? `${x.mfr} ${x.size} wiper blade`
+      : `${v.year} ${v.make} ${v.model} wiper blade ${x.size}`;
+    const searchQuery = mfr => query;
+    return `<div class="part-row">
+      <div class="part-name">${x.label}</div>
+      <div style="font-family:'Roboto Mono',monospace;font-size:12px;color:var(--accent);text-align:center;">${x.mfr || '—'}</div>
+      <div class="part-number">${x.size}</div>
+      <div style="display:flex;align-items:center;gap:4px;justify-self:end;">
+        <a class="amazon-btn" href="https://www.amazon.com/s?k=${encodeURIComponent(query)}" target="_blank">Amazon →</a>
+        <button class="btn-sm" onclick="showEditWiperModal()">Edit</button>
+      </div>
+    </div>`;
+  });
+
+  // Hydraulic Filter
+  const hydraulicRows = [
+    makeRow('Hydraulic Filter', s.hydraulicFilter, s.hydraulicFilterMfr || '', `<button class="btn-sm" onclick="showEditPrimaryPartModal('hydraulicFilter')" style="margin-left:4px;">Edit</button>`)
+  ];
+
+  const wiperSection = wiperRows.length ? `<div class="parts-section"><div class="parts-title">Wiper Blades</div>${colHeaders}${wiperRows.join('')}</div>` : '';
+
+  let html = section('Oil Filters', oilRows)
+           + section('Air Filters', airRows)
+           + section('Cabin Filters', cabinRows)
+           + section('Hydraulic Filters', hydraulicRows)
+           + wiperSection
+           + section('Additional Parts', altOther);
+
+  if (!html) html = `<div class="empty" style="padding:24px 0;text-align:left;font-size:13px;">No parts added yet.</div>`;
+
+  html += `<button class="add-service-btn" onclick="showAddPartModal()" style="margin-top:8px;">+ Add Part</button>`;
+
+  document.getElementById('tab-parts').innerHTML = html;
+}
+
+function showAddPartModal() {
+  document.getElementById('part-name-input').value = '';
+  document.getElementById('part-mfr-input').value = '';
+  document.getElementById('part-number-input').value = '';
+  document.getElementById('add-part-modal').classList.add('active');
+}
+
+function savePart() {
+  const name = document.getElementById('part-name-input').value.trim();
+  const number = document.getElementById('part-number-input').value.trim();
+  const mfr = document.getElementById('part-mfr-input').value.trim();
+  if (!name || !number) { alert('Please enter both a part name and number.'); return; }
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  if (!v.altParts) v.altParts = [];
+  v.altParts.push({ name, number, mfr });
+  save();
+  closeModal('add-part-modal');
+  renderParts(v);
+  showToast('Part added!');
+}
+
+function deletePart(idx) {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const deletedPart = v.altParts[idx];
+
+  v.altParts.splice(idx, 1);
+  save();
+  renderParts(v);
+
+  showUndoToast('Part removed.', () => {
+    v.altParts.splice(idx, 0, deletedPart);
+    save();
+    renderParts(v);
+  });
+}
+
+let editingPartIdx = null;
+function showEditWiperModal() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const w = v.wipers || {};
+  document.getElementById('edit-wiper-driver').value = (w.driver || '').replace(/"/g, '').trim();
+  document.getElementById('edit-wiper-passenger').value = (w.passenger || '').replace(/"/g, '').trim();
+  document.getElementById('edit-wiper-rear').value = (w.rear || '').replace(/"/g, '').trim();
+  document.getElementById('edit-wiper-driver-mfr').value = w.driverMfr || '';
+  document.getElementById('edit-wiper-passenger-mfr').value = w.passengerMfr || '';
+  document.getElementById('edit-wiper-rear-mfr').value = w.rearMfr || '';
+  document.getElementById('edit-wiper-modal').classList.add('active');
+}
+
+function saveEditWipers() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  if (!v.wipers) v.wipers = {};
+  const driver = document.getElementById('edit-wiper-driver').value.trim();
+  const passenger = document.getElementById('edit-wiper-passenger').value.trim();
+  const rear = document.getElementById('edit-wiper-rear').value.trim();
+  v.wipers.driver = driver ? driver + '"' : '';
+  v.wipers.passenger = passenger ? passenger + '"' : '';
+  v.wipers.rear = rear ? rear + '"' : '';
+  v.wipers.driverMfr = document.getElementById('edit-wiper-driver-mfr').value.trim();
+  v.wipers.passengerMfr = document.getElementById('edit-wiper-passenger-mfr').value.trim();
+  v.wipers.rearMfr = document.getElementById('edit-wiper-rear-mfr').value.trim();
+  // Clean empty keys
+  Object.keys(v.wipers).forEach(k => { if (!v.wipers[k]) delete v.wipers[k]; });
+  save();
+  closeModal('edit-wiper-modal');
+  renderParts(v);
+  showToast('Wipers updated!');
+}
+
+let editingPrimaryField = null;
+
+const primaryPartLabels = {
+  oilFilter: 'Oil Filter',
+  airFilter: 'Air Filter',
+  cabinFilter: 'Cabin Filter',
+  hydraulicFilter: 'Hydraulic Filter'
+};
+
+function showEditPrimaryPartModal(field) {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  editingPrimaryField = field;
+  const mfrField = field + 'Mfr';
+  document.getElementById('edit-primary-part-title').textContent = 'Edit ' + (primaryPartLabels[field] || field);
+  document.getElementById('edit-primary-mfr').value = v.specs[mfrField] || '';
+  document.getElementById('edit-primary-number').value = v.specs[field] || '';
+  document.getElementById('edit-primary-part-modal').classList.add('active');
+}
+
+function saveEditPrimaryPart() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const number = document.getElementById('edit-primary-number').value.trim();
+  const mfr = document.getElementById('edit-primary-mfr').value.trim();
+  v.specs[editingPrimaryField] = number;
+  v.specs[editingPrimaryField + 'Mfr'] = mfr;
+  save();
+  closeModal('edit-primary-part-modal');
+  renderParts(v);
+  showToast('Part updated!');
+}
+
+function showEditPartModal(idx) {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const p = v.altParts[idx];
+  editingPartIdx = idx;
+  document.getElementById('edit-part-name-input').value = p.name || '';
+  document.getElementById('edit-part-mfr-input').value = p.mfr || '';
+  document.getElementById('edit-part-number-input').value = p.number || '';
+  document.getElementById('edit-part-modal').classList.add('active');
+}
+
+function deletePartFromModal() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const idx = editingPartIdx;
+  const deletedPart = v.altParts[idx];
+
+  v.altParts.splice(idx, 1);
+  save();
+  closeModal('edit-part-modal');
+  renderParts(v);
+
+  showUndoToast('Part deleted.', () => {
+    v.altParts.splice(idx, 0, deletedPart);
+    save();
+    renderParts(v);
+  });
+}
+
+function saveEditPart() {
+  const name = document.getElementById('edit-part-name-input').value.trim();
+  const number = document.getElementById('edit-part-number-input').value.trim();
+  const mfr = document.getElementById('edit-part-mfr-input').value.trim();
+  if (!name || !number) { alert('Please enter both a part name and number.'); return; }
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  v.altParts[editingPartIdx] = { name, number, mfr };
+  save();
+  closeModal('edit-part-modal');
+  renderParts(v);
+  showToast('Part updated!');
+}
+
+function renderHistory(v) {
+  const sorted = [...v.history].sort((a, b) => {
+    const dateA = parseServiceDate(a.date);
+    const dateB = parseServiceDate(b.date);
+    if (dateA && dateB) return dateB - dateA;
+    if (dateA) return -1;
+    if (dateB) return 1;
+    // Fall back to mileage if neither has a parseable date
+    return (b.mileage || 0) - (a.mileage || 0);
+  });
+  const unit = v.isHours ? 'hrs' : 'mi';
+
+  let html = `<div class="form-group" style="margin-bottom:14px;">
+    <input type="text" id="history-search" placeholder="🔍 Search history — e.g. spark plugs, brakes..."
+      style="width:100%;background:var(--steel);border:1px solid #444;color:var(--chrome);padding:10px 12px;font-family:Inter,sans-serif;font-size:14px;outline:none;"
+      oninput="filterHistory()" value="${_historySearchTerm || ''}">
+  </div>
+  <div id="history-search-count" style="font-size:12px;color:var(--muted);margin-bottom:10px;display:none;"></div>
+  <button class="add-service-btn" onclick="showAddServiceModal()">+ Log Service</button>
+  <div id="history-entries"></div>`;
+
+  document.getElementById('tab-history').innerHTML = html;
+
+  // Store full sorted list on the element for filtering, then render
+  window._historyFullList = sorted;
+  window._historyUnit = unit;
+  filterHistory();
+}
+
+let _historySearchTerm = '';
+
+function highlightMatch(text, term) {
+  if (!term) return text;
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return text.replace(regex, '<mark style="background:var(--accent);color:#000;padding:0 2px;border-radius:2px;">$1</mark>');
+}
+
+function filterHistory() {
+  const searchInput = document.getElementById('history-search');
+  const term = searchInput ? searchInput.value.trim() : '';
+  _historySearchTerm = term;
+
+  const sorted = window._historyFullList || [];
+  const unit = window._historyUnit || 'mi';
+
+  const filtered = term
+    ? sorted.filter(h => h.desc.toLowerCase().includes(term.toLowerCase()))
+    : sorted;
+
+  const countEl = document.getElementById('history-search-count');
+  if (term) {
+    countEl.style.display = 'block';
+    countEl.textContent = `${filtered.length} matching record${filtered.length === 1 ? '' : 's'}`;
+  } else {
+    countEl.style.display = 'none';
+  }
+
+  const container = document.getElementById('history-entries');
+  if (!filtered.length) {
+    container.innerHTML = term
+      ? `<div class="empty">No service records match "${term}".</div>`
+      : `<div class="empty">No service history yet.</div>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach((h, i) => {
+    const missingMileage = h.mileage == null;
+    const descHtml = term ? highlightMatch(h.desc, term) : h.desc;
+    html += `<div class="service-entry ${i === 0 && !term ? 'recent' : ''}">
+      <div class="service-meta">
+        <div class="service-date">${h.date || '—'}</div>
+        <div class="service-mileage" style="${missingMileage ? 'color:var(--accent);' : ''}">${missingMileage ? '⚠ No mileage' : Number(h.mileage).toLocaleString() + ' ' + unit}</div>
+      </div>
+      <div class="service-desc">${descHtml}</div>
+      <div class="service-actions">
+        <button class="btn-sm" onclick="editService('${h.id}')">Edit</button>
+        <button class="btn-sm danger" onclick="deleteService('${h.id}')">Delete</button>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderNotes(v) {
+  document.getElementById('tab-notes').innerHTML = `
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Vehicle Notes & Reminders</label>
+      <textarea id="notes-area" style="height:200px;width:100%;background:#1a1a1a;border:1px solid #444;color:#e8e8e8;padding:12px;font-family:Inter,sans-serif;font-size:14px;outline:none;">${v.notes || ''}</textarea>
+    </div>
+    <button class="btn-primary" onclick="saveNotes()">Save Notes</button>
+  `;
+}
+
+function saveTag() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  v.tag = document.getElementById("tag-input").value.trim().toUpperCase();
+  save();
+  document.getElementById("detail-tag").innerHTML = v.tag ? `<span class="tag-badge">${v.tag}</span>` : "";
+  showToast("Plate saved!");
+}
+
+function saveNotes() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  v.notes = document.getElementById('notes-area').value;
+  save();
+  showToast('Notes saved');
+}
+
+// ── TABS ───────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    const tabs = ['specs', 'parts', 'history', 'notes'];
+    b.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── VIEWS ──────────────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showGarage() {
+  renderGarage();
+  showView('garage-view');
+}
+
+// ── MODALS ─────────────────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function updateVehicleTypeFields() {
+  const isOther = document.getElementById('nv-type').value === 'other';
+  document.getElementById('nv-tag-row').style.display = isOther ? 'none' : '';
+  document.getElementById('nv-type-only-row').style.display = isOther ? '' : 'none';
+  document.getElementById('nv-hydraulic-section').style.display = isOther ? '' : 'none';
+  document.getElementById('nv-inspection-row').style.display = isOther ? 'none' : '';
+  updateMileageLabel();
+}
+
+function updateMileageLabelOther() {
+  const isHours = document.getElementById('nv-is-hours-other').value === '1';
+  document.getElementById('nv-mileage-label').textContent = isHours ? 'Current Hours' : 'Current Mileage';
+  document.getElementById('nv-mileage').placeholder = isHours ? '150' : '45000';
+}
+
+function updateMileageLabel() {
+  const isOther = document.getElementById('nv-type').value === 'other';
+  const select = isOther ? 'nv-is-hours-other' : 'nv-is-hours';
+  const isHours = document.getElementById(select).value === '1';
+  document.getElementById('nv-mileage-label').textContent = isHours ? 'Current Hours' : 'Current Mileage';
+  document.getElementById('nv-mileage').placeholder = isHours ? '150' : '45000';
+}
+
+function showAddVehicleModal() {
+  document.getElementById('add-vehicle-modal').classList.add('active');
+}
+
+function addVehicle() {
+  const year = document.getElementById('nv-year').value.trim();
+  const make = document.getElementById('nv-make').value.trim();
+  const model = document.getElementById('nv-model').value.trim();
+  if (!make || !model) { alert('Make and model are required.'); return; }
+
+  const v = {
+    id: 'v' + Date.now(),
+    year, make, model,
+    tag: document.getElementById('nv-type').value === 'vehicle' ? document.getElementById('nv-tag').value.trim().toUpperCase() : '',
+    mileage: parseFloat(document.getElementById('nv-mileage').value) || 0,
+    avgMilesPerWeek: parseInt(document.getElementById('nv-avg-miles').value) || 0,
+    isHours: document.getElementById('nv-type').value === 'vehicle' ? document.getElementById('nv-is-hours').value === '1' : document.getElementById('nv-is-hours-other').value === '1',
+    vehicleType: document.getElementById('nv-type').value,
+    inspectionMonth: document.getElementById('nv-type').value === 'vehicle' ? document.getElementById('nv-inspection-month').value : '',
+    photo: null,
+    specs: {
+      oilCap: document.getElementById('nv-oil-cap').value.trim() ? document.getElementById('nv-oil-cap').value.trim() + ' Quarts' : '',
+      oilWeight: document.getElementById('nv-oil-weight').value.trim(),
+      oilFilter: document.getElementById('nv-oil-filter').value.trim(),
+      airFilter: document.getElementById('nv-air-filter').value.trim(),
+      cabinFilter: document.getElementById('nv-cabin-filter').value.trim(),
+      torque: document.getElementById('nv-torque').value.trim() ? document.getElementById('nv-torque').value.trim() + ' ft/lb' : '',
+      wrench: document.getElementById('nv-wrench').value.trim(),
+      hydraulicFluid: document.getElementById('nv-hydraulic-fluid').value.trim(),
+      hydraulicCap: document.getElementById('nv-hydraulic-cap').value.trim() ? document.getElementById('nv-hydraulic-cap').value.trim() + ' ' + document.getElementById('nv-hydraulic-unit').value : '',
+      hydraulicFilter: document.getElementById('nv-hydraulic-filter').value.trim()
+    },
+    wipers: {
+      driver: document.getElementById('nv-wiper-driver').value.trim() ? document.getElementById('nv-wiper-driver').value.trim() + '"' : '',
+      passenger: document.getElementById('nv-wiper-passenger').value.trim() ? document.getElementById('nv-wiper-passenger').value.trim() + '"' : '',
+      rear: document.getElementById('nv-wiper-rear').value.trim() ? document.getElementById('nv-wiper-rear').value.trim() + '"' : ''
+    },
+    altParts: [], notes: '', history: []
+  };
+
+  // Remove empty wiper keys
+  Object.keys(v.wipers).forEach(k => { if (!v.wipers[k]) delete v.wipers[k]; });
+
+  vehicles.push(v);
+  save();
+  closeModal('add-vehicle-modal');
+  renderGarage();
+  showToast('Vehicle added!');
+
+  // Clear form
+  ['nv-year','nv-make','nv-model','nv-tag','nv-mileage','nv-oil-cap','nv-oil-weight','nv-oil-filter','nv-air-filter','nv-cabin-filter','nv-torque','nv-wrench','nv-avg-miles','nv-wiper-driver','nv-wiper-passenger','nv-wiper-rear','nv-hydraulic-fluid','nv-hydraulic-cap','nv-hydraulic-filter'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nv-is-hours').value = '0';
+  document.getElementById('nv-is-hours-other').value = '0';
+  document.getElementById('nv-type').value = 'vehicle';
+  document.getElementById('nv-hydraulic-unit').value = 'Quarts';
+  document.getElementById('nv-inspection-month').value = '';
+  updateVehicleTypeFields();
+}
+
+function showEditVehicleModal() {
+  try {
+    const v = vehicles.find(x => x.id === currentVehicleId);
+    if (!v) { alert('No vehicle selected. Please open a vehicle first.'); return; }
+    document.getElementById('ev-year').value = v.year || '';
+    document.getElementById('ev-make').value = v.make || '';
+    document.getElementById('ev-model').value = v.model || '';
+    document.getElementById('ev-tag').value = v.tag || '';
+    document.getElementById('ev-type').value = v.vehicleType || 'vehicle';
+    document.getElementById('ev-is-hours').value = v.isHours ? '1' : '0';
+    document.getElementById('ev-mileage-label').textContent = v.isHours ? 'Current Hours' : 'Current Mileage';
+    document.getElementById('ev-mileage').value = v.mileage || '';
+    document.getElementById('ev-oil-cap').value = ((v.specs && v.specs.oilCap) || '').replace(/\s*(qts|quarts)\s*/i, '').trim();
+    document.getElementById('ev-oil-weight').value = (v.specs && v.specs.oilWeight) || '';
+    document.getElementById('ev-oil-filter').value = (v.specs && v.specs.oilFilter) || '';
+    document.getElementById('ev-air-filter').value = (v.specs && v.specs.airFilter) || '';
+    document.getElementById('ev-cabin-filter').value = (v.specs && v.specs.cabinFilter) || '';
+    document.getElementById('ev-torque').value = ((v.specs && v.specs.torque) || '').replace(/\s*ft\/lb/i, '').trim();
+    document.getElementById('ev-wrench').value = (v.specs && v.specs.wrench) || '';
+    document.getElementById('ev-avg-miles').value = v.avgMilesPerWeek || '';
+    document.getElementById('ev-wiper-driver').value = ((v.wipers && v.wipers.driver) || '').replace(/"/g, '').trim();
+    document.getElementById('ev-wiper-passenger').value = ((v.wipers && v.wipers.passenger) || '').replace(/"/g, '').trim();
+    document.getElementById('ev-wiper-rear').value = ((v.wipers && v.wipers.rear) || '').replace(/"/g, '').trim();
+    document.getElementById('ev-hydraulic-fluid').value = (v.specs && v.specs.hydraulicFluid) || '';
+    document.getElementById('ev-hydraulic-cap').value = ((v.specs && v.specs.hydraulicCap) || '').replace(/\s*(qts|quarts|gal|gallons)\s*/i, '').trim();
+    document.getElementById('ev-hydraulic-unit').value = /gallon/i.test((v.specs && v.specs.hydraulicCap) || '') ? 'Gallons' : 'Quarts';
+    document.getElementById('ev-hydraulic-filter').value = (v.specs && v.specs.hydraulicFilter) || '';
+    document.getElementById('ev-hydraulic-section').style.display = (v.vehicleType === 'other') ? '' : 'none';
+    document.getElementById('ev-inspection-month').value = v.inspectionMonth || '';
+    document.getElementById('ev-inspection-row').style.display = (v.vehicleType === 'other') ? 'none' : '';
+    document.getElementById('edit-vehicle-modal').classList.add('active');
+  } catch(err) {
+    alert('Edit error: ' + err.message);
+  }
+}
+
+function saveEditVehicle() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  if (!v) return;
+
+  const make = document.getElementById('ev-make').value.trim();
+  const model = document.getElementById('ev-model').value.trim();
+  if (!make || !model) { alert('Make and model are required.'); return; }
+
+  v.year = document.getElementById('ev-year').value.trim();
+  v.make = make;
+  v.model = model;
+  v.tag = document.getElementById('ev-tag').value.trim().toUpperCase();
+  v.mileage = parseFloat(document.getElementById('ev-mileage').value) || 0;
+  v.avgMilesPerWeek = parseInt(document.getElementById('ev-avg-miles').value) || 0;
+  v.vehicleType = document.getElementById('ev-type').value;
+  v.isHours = document.getElementById('ev-is-hours').value === '1';
+  v.inspectionMonth = v.vehicleType === 'vehicle' ? document.getElementById('ev-inspection-month').value : '';
+
+  v.specs.oilCap = document.getElementById('ev-oil-cap').value.trim() ? document.getElementById('ev-oil-cap').value.trim() + ' Quarts' : '';
+  v.specs.oilWeight = document.getElementById('ev-oil-weight').value.trim();
+  v.specs.oilFilter = document.getElementById('ev-oil-filter').value.trim();
+  v.specs.airFilter = document.getElementById('ev-air-filter').value.trim();
+  v.specs.cabinFilter = document.getElementById('ev-cabin-filter').value.trim();
+  v.specs.torque = document.getElementById('ev-torque').value.trim() ? document.getElementById('ev-torque').value.trim() + ' ft/lb' : '';
+  v.specs.wrench = document.getElementById('ev-wrench').value.trim();
+  v.specs.hydraulicFluid = document.getElementById('ev-hydraulic-fluid').value.trim();
+  v.specs.hydraulicCap = document.getElementById('ev-hydraulic-cap').value.trim() ? document.getElementById('ev-hydraulic-cap').value.trim() + ' ' + document.getElementById('ev-hydraulic-unit').value : '';
+  v.specs.hydraulicFilter = document.getElementById('ev-hydraulic-filter').value.trim();
+
+  v.wipers = {
+    driver: document.getElementById('ev-wiper-driver').value.trim() ? document.getElementById('ev-wiper-driver').value.trim() + '"' : '',
+    passenger: document.getElementById('ev-wiper-passenger').value.trim() ? document.getElementById('ev-wiper-passenger').value.trim() + '"' : '',
+    rear: document.getElementById('ev-wiper-rear').value.trim() ? document.getElementById('ev-wiper-rear').value.trim() + '"' : ''
+  };
+  Object.keys(v.wipers).forEach(k => { if (!v.wipers[k]) delete v.wipers[k]; });
+
+  save();
+  closeModal('edit-vehicle-modal');
+  openVehicle(v.id);
+  showToast('Vehicle updated!');
+}
+
+function deleteVehicle() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  if (!v) return;
+  if (!confirm(`Delete ${v.year} ${v.make} ${v.model}? This removes all its history and photos. You'll have a few seconds to undo.`)) return;
+
+  const deletedVehicle = v;
+  const deletedIdx = vehicles.findIndex(x => x.id === currentVehicleId);
+
+  vehicles = vehicles.filter(x => x.id !== currentVehicleId);
+  save();
+  closeModal('edit-vehicle-modal');
+  showGarage();
+
+  showUndoToast(`${deletedVehicle.year} ${deletedVehicle.make} ${deletedVehicle.model} deleted.`, () => {
+    vehicles.splice(deletedIdx, 0, deletedVehicle);
+    save();
+    renderGarage();
+  });
+}
+
+function showAddServiceModal() {
+  editingServiceId = null;
+  document.getElementById('service-modal-title').textContent = 'Log Service';
+  document.getElementById('svc-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('svc-mileage').value = '';
+  document.getElementById('svc-desc').value = '';
+  populateServiceSuggestions();
+  document.getElementById('add-service-modal').classList.add('active');
+}
+
+function populateServiceSuggestions() {
+  const container = document.getElementById('svc-suggestions');
+  container.innerHTML = '';
+
+  const enabled = serviceItems.filter(x => x.enabled);
+
+  if (!enabled.length) {
+    container.innerHTML = '<span style="font-size:12px;color:var(--muted);">No items enabled — turn them on in Settings</span>';
+    return;
+  }
+
+  enabled.forEach(item => {
+    const chip = document.createElement('button');
+    chip.className = 'svc-chip';
+    chip.textContent = item.name;
+    chip.onclick = () => toggleServiceChip(chip, item.name);
+    container.appendChild(chip);
+  });
+}
+
+function toggleServiceChip(chip, item) {
+  const textarea = document.getElementById('svc-desc');
+  const selected = chip.classList.toggle('selected');
+  const current = textarea.value.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (selected) {
+    current.push(item);
+  } else {
+    const idx = current.findIndex(s => s.toLowerCase() === item.toLowerCase());
+    if (idx > -1) current.splice(idx, 1);
+  }
+  textarea.value = current.join(', ');
+}
+
+// Format YYYY-MM-DD input into "Jan 2, 2022" style matching imported history
+function formatServiceDate(isoDate) {
+  if (!isoDate) return '—';
+  // Parse as local date (avoid timezone shift from new Date('YYYY-MM-DD'))
+  const [year, month, day] = isoDate.split('-').map(Number);
+  if (!year || !month || !day) return isoDate;
+  const d = new Date(year, month - 1, day);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// Parse a stored history date (either "Jan 2, 2022" style or raw ISO) into a Date for sorting
+function parseServiceDate(dateStr) {
+  if (!dateStr || dateStr === '—') return null;
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function saveService() {
+  const desc = document.getElementById('svc-desc').value.trim();
+  if (!desc) { alert('Please enter what service was performed.'); return; }
+  const mileageVal = document.getElementById('svc-mileage').value.trim();
+  if (!mileageVal) {
+    const proceed = confirm('You haven\'t entered a mileage for this service. Save it anyway? You can add the mileage later by editing this entry.');
+    if (!proceed) return;
+  }
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const entry = {
+    id: 'h' + Date.now(),
+    date: formatServiceDate(document.getElementById('svc-date').value),
+    mileage: parseInt(mileageVal) || null,
+    desc
+  };
+  v.history.push(entry);
+  if (entry.mileage && entry.mileage > v.mileage) v.mileage = entry.mileage;
+  save();
+  closeModal('add-service-modal');
+  renderHistory(v);
+  renderSpecs(v);
+  showToast('Service logged!');
+}
+
+function editService(hid) {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const h = v.history.find(x => x.id === hid);
+  editingServiceId = hid;
+  // Convert stored friendly date back to YYYY-MM-DD for the date input
+  const parsed = parseServiceDate(h.date);
+  document.getElementById('edit-svc-date').value = parsed ? parsed.toISOString().split('T')[0] : '';
+  document.getElementById('edit-svc-mileage').value = h.mileage || '';
+  document.getElementById('edit-svc-desc').value = h.desc;
+  document.getElementById('edit-service-modal').classList.add('active');
+}
+
+function saveEditService() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const h = v.history.find(x => x.id === editingServiceId);
+  h.date = formatServiceDate(document.getElementById('edit-svc-date').value);
+  h.mileage = parseInt(document.getElementById('edit-svc-mileage').value) || null;
+  h.desc = document.getElementById('edit-svc-desc').value.trim();
+  save();
+  closeModal('edit-service-modal');
+  renderHistory(v);
+  showToast('Service updated!');
+}
+
+function deleteService(hid) {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const deletedEntry = v.history.find(x => x.id === hid);
+  const deletedIdx = v.history.findIndex(x => x.id === hid);
+  const previousMileage = v.mileage;
+
+  v.history = v.history.filter(x => x.id !== hid);
+
+  // Always recalculate mileage from highest remaining entry
+  const maxMileage = v.history.reduce((max, h) => {
+    const m = parseFloat(h.mileage);
+    return (!isNaN(m) && m > max) ? m : max;
+  }, 0);
+
+  if (maxMileage > 0) v.mileage = maxMileage;
+
+  save();
+  renderHistory(v);
+  renderSpecs(v);
+
+  showUndoToast('Service record deleted.', () => {
+    v.history.splice(deletedIdx, 0, deletedEntry);
+    v.mileage = previousMileage;
+    save();
+    renderHistory(v);
+    renderSpecs(v);
+  });
+}
+
+function showMileageModal() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  document.getElementById('new-mileage').value = v.mileage;
+  document.getElementById('mileage-modal').classList.add('active');
+}
+
+function saveMileage() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const val = parseFloat(document.getElementById('new-mileage').value);
+  if (isNaN(val)) return;
+  v.mileage = val;
+  save();
+  closeModal('mileage-modal');
+  renderSpecs(v);
+  showToast('Mileage updated!');
+}
+
+// changeVehiclePhoto replaced by addVehiclePhoto
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────
+function exportToExcel() {
+  const wb = XLSX.utils.book_new();
+
+  vehicles.forEach(v => {
+    const unit = v.isHours ? 'Hours' : 'Mileage';
+    const s = v.specs || {};
+    const w = v.wipers || {};
+    const rows = [];
+
+    // Header
+    rows.push([`${v.year} ${v.make} ${v.model}`.trim()]);
+    rows.push([]);
+
+    // Specs section
+    rows.push(['SPECIFICATIONS', '']);
+    rows.push(['Oil Capacity', s.oilCap || '']);
+    rows.push(['Oil Weight', s.oilWeight || '']);
+    rows.push(['Oil Filter #', s.oilFilter || '']);
+    rows.push(['Air Filter #', s.airFilter || '']);
+    rows.push(['Cabin Filter #', s.cabinFilter || '']);
+    rows.push(['Lug Nut Torque', s.torque || '']);
+    rows.push(['Oil Drain Wrench', s.wrench || '']);
+    if (s.hydraulicFluid)  rows.push(['Hydraulic Fluid Type', s.hydraulicFluid]);
+    if (s.hydraulicCap)    rows.push(['Hydraulic Capacity', s.hydraulicCap]);
+    if (s.hydraulicFilter) rows.push(['Hydraulic Filter #', s.hydraulicFilter]);
+    if (w.driver)    rows.push(['Wiper - Driver', w.driver]);
+    if (w.passenger) rows.push(['Wiper - Passenger', w.passenger]);
+    if (w.rear)      rows.push(['Wiper - Rear', w.rear]);
+    rows.push(['License Plate', v.tag || '']);
+    if (v.inspectionMonth) rows.push(['Inspection Month', v.inspectionMonth]);
+    rows.push([`Current ${unit}`, v.mileage || '']);
+    rows.push([]);
+
+    // Additional parts
+    if (v.altParts && v.altParts.length) {
+      rows.push(['ADDITIONAL PARTS', '']);
+      rows.push(['Part Name', 'Part Number']);
+      v.altParts.forEach(p => rows.push([p.name, p.number]));
+      rows.push([]);
+    }
+
+    // Service history
+    rows.push(['SERVICE HISTORY', '', '']);
+    rows.push(['Date', unit, 'Service Performed']);
+    const sorted = [...(v.history || [])].sort((a, b) => (a.mileage || 0) - (b.mileage || 0));
+    sorted.forEach(h => {
+      rows.push([h.date || '', h.mileage != null ? h.mileage : '', h.desc || '']);
+    });
+
+    // Notes
+    if (v.notes) {
+      rows.push([]);
+      rows.push(['NOTES', '']);
+      rows.push([v.notes]);
+    }
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Column widths
+    ws['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 60 }];
+
+    // Style header row bold (SheetJS CE doesn't support full styles but sets width)
+    const sheetName = `${v.year} ${v.make} ${v.model}`.trim().substring(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName || 'Vehicle');
+  });
+
+  const date = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `MyGarage-${date}.xlsx`);
+  showToast('Excel file downloaded!');
+}
+
+function exportData() {
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    vehicles: vehicles,
+    serviceItems: serviceItems
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `garage-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported!');
+}
+
+function exportSingleVehicle() {
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  if (!v) return;
+  const data = {
+    version: 1,
+    type: 'single-vehicle',
+    exported: new Date().toISOString(),
+    vehicle: v
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = `${v.year}-${v.make}-${v.model}`.replace(/[^a-z0-9\-]/gi, '-');
+  a.href = url;
+  a.download = `${safeName}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Vehicle exported! Share this file with the new owner.');
+}
+
+function importSingleVehicle(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let incoming = null;
+
+      if (data.type === 'single-vehicle' && data.vehicle) {
+        incoming = data.vehicle;
+      } else if (data.vehicles && Array.isArray(data.vehicles) && data.vehicles.length === 1) {
+        incoming = data.vehicles[0];
+      }
+
+      if (!incoming || !incoming.make || !incoming.model) {
+        throw new Error('Invalid vehicle file');
+      }
+
+      // Assign a fresh ID so it never collides with an existing vehicle
+      incoming.id = 'v' + Date.now();
+      // Re-key history entry IDs too, to avoid any collision
+      if (incoming.history) {
+        incoming.history = incoming.history.map(h => ({ ...h, id: 'h' + Date.now() + Math.random().toString(36).slice(2, 7) }));
+      }
+
+      vehicles.push(incoming);
+      save();
+      renderGarage();
+      showToast(`${incoming.year} ${incoming.make} ${incoming.model} added!`);
+    } catch(err) {
+      alert('Could not read that file. Make sure it\'s a valid vehicle export.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.vehicles || !Array.isArray(data.vehicles)) {
+        throw new Error('Invalid file format');
+      }
+      if (!confirm(`This will replace all your current data with ${data.vehicles.length} vehicles from the backup. Continue?`)) return;
+      vehicles = data.vehicles;
+      serviceItems = data.serviceItems || [];
+      save();
+      saveServiceItems();
+      const status = document.getElementById('import-status');
+      status.textContent = `✓ Imported ${vehicles.length} vehicles successfully!`;
+      status.style.display = 'block';
+      setTimeout(() => status.style.display = 'none', 4000);
+      renderServiceItemsList();
+      showToast('Data imported!');
+    } catch(err) {
+      alert('Could not read that file. Make sure it\'s a valid Garage backup.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────
+let serviceItems = [];
+
+function loadServiceItems() {
+  // Data already loaded by load() — just rebuild from history if empty
+  if (!serviceItems.length) {
+    serviceItems = getItemsFromHistory();
+    save();
+  }
+}
+
+function getItemsFromHistory() {
+  const seen = new Set();
+  const items = [];
+  vehicles.forEach(v => {
+    (v.history || []).forEach(h => {
+      h.desc.split(/,\s*/).forEach(part => {
+        const trimmed = part.trim();
+        if (trimmed && !seen.has(trimmed.toLowerCase())) {
+          seen.add(trimmed.toLowerCase());
+          items.push({ name: trimmed, enabled: true });
+        }
+      });
+    });
+  });
+  return items.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function saveServiceItems() {
+  save(); // Save everything together in one key
+}
+
+function showSettings() {
+  renderServiceItemsList();
+  showView('settings-view');
+}
+
+function renderServiceItemsList() {
+  const list = document.getElementById('service-items-list');
+  list.innerHTML = '';
+  // Filter out any invalid items before rendering
+  serviceItems = serviceItems.filter(x => x && x.name && x.name.trim());
+  saveServiceItems();
+
+  if (!serviceItems.length) {
+    list.innerHTML = '<div class="empty" style="text-align:left;padding:12px 0;">No service items yet. Add one below.</div>';
+    return;
+  }
+
+  // Count enabled
+  const enabledCount = serviceItems.filter(x => x.enabled).length;
+  const summary = document.createElement('p');
+  summary.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:12px;';
+  summary.textContent = `${enabledCount} of ${serviceItems.length} items shown as chips when logging service.`;
+  list.appendChild(summary);
+
+  serviceItems.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'settings-item';
+    row.dataset.idx = idx;
+    row.style.opacity = item.enabled ? '1' : '0.45';
+    row.innerHTML = `
+      <span class="item-label" style="flex:1;">${item.name}</span>
+      <input class="item-edit" type="text" value="${item.name}" style="display:none;flex:1;" onblur="finishEditItem(${idx}, this)">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="btn-sm" onclick="toggleServiceItem(${idx})" style="border-color:${item.enabled ? 'var(--green)' : '#444'};color:${item.enabled ? 'var(--green)' : 'var(--muted)'};">${item.enabled ? '✓ On' : 'Off'}</button>
+        <button class="btn-sm edit-btn" onclick="startEditItem(${idx})">Edit</button>
+        <button class="btn-sm danger" onclick="deleteServiceItem(${idx})">✕</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function toggleServiceItem(idx) {
+  serviceItems[idx].enabled = !serviceItems[idx].enabled;
+  saveServiceItems();
+  renderServiceItemsList();
+}
+
+function startEditItem(idx) {
+  const row = document.querySelector(`.settings-item[data-idx="${idx}"]`);
+  const label = row.querySelector('.item-label');
+  const input = row.querySelector('.item-edit');
+  const editBtn = row.querySelector('.edit-btn');
+  label.style.display = 'none';
+  input.style.display = 'block';
+  if (editBtn) { editBtn.textContent = '✓ Save'; editBtn.onclick = () => finishEditItem(idx, input); }
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') finishEditItem(idx, input); });
+  input.focus();
+  input.select();
+}
+
+function finishEditItem(idx, input) {
+  const val = input.value.trim();
+  if (val) {
+    serviceItems[idx].name = val;
+    saveServiceItems();
+  }
+  renderServiceItemsList();
+}
+
+function deleteServiceItem(idx) {
+  const deletedItem = serviceItems[idx];
+  serviceItems.splice(idx, 1);
+  saveServiceItems();
+  renderServiceItemsList();
+
+  showUndoToast('Service item removed.', () => {
+    serviceItems.splice(idx, 0, deletedItem);
+    saveServiceItems();
+    renderServiceItemsList();
+  });
+}
+
+function resetServiceItems() {
+  if (!confirm('Rebuild service items from your vehicle history? This replaces your current list.')) return;
+  serviceItems = getItemsFromHistory();
+  save();
+  renderServiceItemsList();
+  showToast('Service items rebuilt!');
+}
+
+function addServiceItem() {
+  const input = document.getElementById('new-service-item');
+  const val = input.value.trim();
+  if (!val) return;
+  if (serviceItems.some(s => s.name.toLowerCase() === val.toLowerCase())) {
+    showToast('Already in the list.');
+    return;
+  }
+  serviceItems.push({ name: val, enabled: true });
+  serviceItems.sort((a, b) => a.name.localeCompare(b.name));
+  saveServiceItems();
+  input.value = '';
+  renderServiceItemsList();
+  showToast('Item added!');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2000);
+}
+
+// ── UNDO SYSTEM ──────────────────────────────────────────────────
+let _undoAction = null;
+let _undoTimer = null;
+
+function showUndoToast(msg, undoFn) {
+  _undoAction = undoFn;
+  const toast = document.getElementById('undo-toast');
+  document.getElementById('undo-toast-msg').textContent = msg;
+  toast.classList.add('active');
+  if (_undoTimer) clearTimeout(_undoTimer);
+  _undoTimer = setTimeout(() => {
+    toast.classList.remove('active');
+    _undoAction = null;
+  }, 6000);
+}
+
+function performUndo() {
+  if (_undoAction) {
+    _undoAction();
+    _undoAction = null;
+  }
+  document.getElementById('undo-toast').classList.remove('active');
+  if (_undoTimer) clearTimeout(_undoTimer);
+  showToast('Restored!');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
+});
+
+// ── INIT ───────────────────────────────────────────────────────────
+load();
+loadServiceItems();
+renderGarage();
+</script>
+</body>
+</html>
